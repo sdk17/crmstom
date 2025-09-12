@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Финансовые отчёты - CRM Стоматология</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .nav {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .nav a {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .nav a:hover {
+            background-color: #0056b3;
+        }
+        .summary {
+            background-color: #e8f5e8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d5a2d;
+        }
+        .chart-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+        .chart-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        #chartCanvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+        }
+        .table-container {
+            margin: 30px 0;
+        }
+        .table-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Финансовые отчёты</h1>
+        
+        <div class="nav">
+            <a href="/">🏠 Главная</a>
+            <a href="/patients.html">👥 Пациенты</a>
+            <a href="/appointments.html">📅 Записи</a>
+            <a href="/services.html">🦷 Услуги</a>
+            <a href="/reports.html">🔄 Обновить</a>
+        </div>
+
+        <div id="loading" class="loading">
+            Загрузка данных...
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            Ошибка загрузки данных
+        </div>
+
+        <div id="content" style="display: none;">
+            <div class="summary" id="totalIncome">
+                Общий доход: <span id="totalAmount">0</span> ₸
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">График доходов по дням</div>
+                <canvas id="chartCanvas" width="800" height="400"></canvas>
+            </div>
+
+            <div class="table-container">
+                <div class="table-title">Доходы по дням</div>
+                <table id="incomeTable">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Сумма (₸)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Загружаем данные при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFinanceData();
+        });
+
+        async function loadFinanceData() {
+            try {
+                const response = await fetch('/reports/finance');
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки данных');
+                }
+                
+                const data = await response.json();
+                displayData(data);
+                
+                // Скрываем загрузку и показываем контент
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        function displayData(data) {
+            // Обновляем общий доход
+            document.getElementById('totalAmount').textContent = 
+                new Intl.NumberFormat('ru-RU').format(data.total_income);
+
+            // Заполняем таблицу
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            // Сортируем данные по дате
+            const sortedByDay = data.by_day.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            sortedByDay.forEach(day => {
+                const row = tableBody.insertRow();
+                row.insertCell(0).textContent = formatDate(day.date);
+                row.insertCell(1).textContent = new Intl.NumberFormat('ru-RU').format(day.income);
+            });
+
+            // Рисуем график
+            drawChart(sortedByDay);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU');
+        }
+
+        function drawChart(data) {
+            const canvas = document.getElementById('chartCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Очищаем canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (data.length === 0) return;
+            
+            const padding = 60;
+            const chartWidth = canvas.width - 2 * padding;
+            const chartHeight = canvas.height - 2 * padding;
+            
+            // Находим максимальное значение для масштабирования
+            const maxIncome = Math.max(...data.map(d => d.income));
+            
+            // Рисуем оси
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding, canvas.height - padding);
+            ctx.stroke();
+            
+            // Рисуем столбцы
+            const barWidth = chartWidth / data.length * 0.8;
+            const barSpacing = chartWidth / data.length;
+            
+            data.forEach((day, index) => {
+                const barHeight = (day.income / maxIncome) * chartHeight;
+                const x = padding + index * barSpacing + (barSpacing - barWidth) / 2;
+                const y = canvas.height - padding - barHeight;
+                
+                // Рисуем столбец
+                ctx.fillStyle = '#007bff';
+                ctx.fillRect(x, y, barWidth, barHeight);
+                
+                // Рисуем значение сверху столбца
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(
+                    new Intl.NumberFormat('ru-RU').format(day.income),
+                    x + barWidth / 2,
+                    y - 5
+                );
+                
+                // Рисуем дату снизу
+                ctx.fillText(
+                    formatDate(day.date),
+                    x + barWidth / 2,
+                    canvas.height - padding + 20
+                );
+            });
+            
+            // Рисуем заголовок графика
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Доходы по дням', canvas.width / 2, 30);
+        }
+    </script>
+</body>
+</html>

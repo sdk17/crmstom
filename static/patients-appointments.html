@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пациенты и Записи - CRM Стоматология</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        
+        .nav {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .nav a {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 0 5px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav a:hover {
+            background-color: #5a6268;
+        }
+        
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+        
+        /* Левая панель - Пациенты */
+        .patients-panel {
+            width: 33.333%;
+            border-right: 2px solid #dee2e6;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .patients-header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .patients-controls {
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .search-box {
+            margin-bottom: 15px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .add-patient-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .add-patient-btn:hover {
+            background-color: #218838;
+        }
+        
+        .patients-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+        
+        .patient-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .patient-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .patient-item.active {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .patient-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .patient-phone {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .patient-item.active .patient-phone {
+            color: #e9ecef;
+        }
+        
+        /* Правая панель - Записи */
+        .appointments-panel {
+            width: 66.667%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .appointments-header {
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .appointments-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .appointments-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .add-appointment-btn {
+            background-color: #fff;
+            color: #28a745;
+        }
+        
+        .add-appointment-btn:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .view-toggle {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        .view-toggle.active {
+            background-color: #fff;
+            color: #28a745;
+        }
+        
+        .appointments-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        /* Календарный вид */
+        .weekly-calendar {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            gap: 1px;
+            background: #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .time-slot {
+            background: #f8f9fa;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .day-header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .time-cell {
+            background: white;
+            min-height: 40px;
+            padding: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+        
+        .time-cell:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .time-cell.occupied {
+            background-color: #ffebee;
+        }
+        
+        .appointment-popup {
+            background: #007bff;
+            color: white;
+            padding: 4px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin-bottom: 2px;
+            cursor: pointer;
+        }
+        
+        .week-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .week-nav-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .week-nav-btn:hover {
+            background: #0056b3;
+        }
+        
+        .current-week {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        /* Табличный вид */
+        .appointments-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .appointments-table th {
+            background: #007bff;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-size: 14px;
+        }
+        
+        .appointments-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 14px;
+        }
+        
+        .appointments-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-scheduled {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-small {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-edit {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-complete {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-small:hover {
+            opacity: 0.8;
+        }
+        
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+        
+        .close:hover {
+            color: #000;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+        
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            z-index: 10000;
+            max-width: 300px;
+            word-wrap: break-word;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .notification.success {
+            background-color: #28a745;
+        }
+        
+        .notification.error {
+            background-color: #dc3545;
+        }
+        
+        .notification.info {
+            background-color: #007bff;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .patients-panel {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid #dee2e6;
+                max-height: 300px;
+            }
+            
+            .appointments-panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦷 CRM Стоматология</h1>
+        </div>
+        
+        <div class="nav">
+            <a href="/">🏠 Главная</a>
+            <a href="/patients-appointments.html">👥 Пациенты и Записи</a>
+            <a href="/services.html">🦷 Услуги</a>
+            <a href="/reports.html">📊 Отчёты</a>
+        </div>
+        
+        <div class="main-content">
+            <!-- Левая панель - Пациенты -->
+            <div class="patients-panel">
+                <div class="patients-header">
+                    👥 Пациенты
+                </div>
+                
+                <div class="patients-controls">
+                    <div class="search-box">
+                        <input type="text" id="patientSearchInput" placeholder="Поиск пациентов...">
+                    </div>
+                    <button class="add-patient-btn" onclick="openAddPatientModal()">
+                        ➕ Добавить пациента
+                    </button>
+                </div>
+                
+                <div class="patients-list" id="patientsList">
+                    <!-- Список пациентов будет загружен динамически -->
+                </div>
+            </div>
+            
+            <!-- Правая панель - Записи -->
+            <div class="appointments-panel">
+                <div class="appointments-header">
+                    <div class="appointments-title">
+                        📅 Записи
+                    </div>
+                    <div class="appointments-controls">
+                        <button class="control-btn add-appointment-btn" onclick="openAddAppointmentModal()">
+                            ➕ Новая запись
+                        </button>
+                        <button class="control-btn view-toggle" id="calendarViewBtn" onclick="switchView('calendar')">
+                            📅 Календарь
+                        </button>
+                        <button class="control-btn view-toggle" id="tableViewBtn" onclick="switchView('table')">
+                            📋 Список
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="appointments-content">
+                    <!-- Календарный вид -->
+                    <div id="calendarView" style="display: none;">
+                        <div class="week-navigation">
+                            <button class="week-nav-btn" onclick="changeWeek(-1)">← Предыдущая</button>
+                            <div class="current-week" id="currentWeekDisplay">Текущая неделя</div>
+                            <button class="week-nav-btn" onclick="changeWeek(1)">Следующая →</button>
+                        </div>
+                        <div class="weekly-calendar" id="weeklyCalendar">
+                            <!-- Календарь будет сгенерирован динамически -->
+                        </div>
+                    </div>
+                    
+                    <!-- Табличный вид -->
+                    <div id="tableView">
+                        <table class="appointments-table" id="appointmentsTable">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Время</th>
+                                    <th>Пациент</th>
+                                    <th>Услуга</th>
+                                    <th>Врач</th>
+                                    <th>Статус</th>
+                                    <th>Стоимость</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appointmentsTableBody">
+                                <!-- Данные будут загружены динамически -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления/редактирования пациента -->
+    <div id="patientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="patientModalTitle">Добавить пациента</h2>
+                <span class="close" onclick="closePatientModal()">&times;</span>
+            </div>
+            <form id="patientForm">
+                <div class="form-group">
+                    <label for="patientName">Имя пациента *</label>
+                    <input type="text" id="patientName" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="patientPhone">Телефон</label>
+                    <input type="tel" id="patientPhone" name="phone">
+                </div>
+                <div class="form-group">
+                    <label for="patientEmail">Email</label>
+                    <input type="email" id="patientEmail" name="email">
+                </div>
+                <div class="form-group">
+                    <label for="patientBirthDate">Дата рождения</label>
+                    <input type="date" id="patientBirthDate" name="birth_date">
+                </div>
+                <div class="form-group">
+                    <label for="patientAddress">Адрес</label>
+                    <input type="text" id="patientAddress" name="address">
+                </div>
+                <div class="form-group">
+                    <label for="patientNotes">Примечания</label>
+                    <textarea id="patientNotes" name="notes"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closePatientModal()">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления/редактирования записи -->
+    <div id="appointmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="appointmentModalTitle">Записать на приём</h2>
+                <span class="close" onclick="closeAppointmentModal()">&times;</span>
+            </div>
+            <form id="appointmentForm">
+                <div class="form-group">
+                    <label for="appointmentPatient">Пациент *</label>
+                    <select id="appointmentPatient" name="patient_id" required>
+                        <option value="">Выберите пациента</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentDate">Дата *</label>
+                    <input type="date" id="appointmentDate" name="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentTime">Время *</label>
+                    <select id="appointmentTime" name="time" required>
+                        <option value="">Выберите время</option>
+                        <option value="09:00">09:00</option>
+                        <option value="09:30">09:30</option>
+                        <option value="10:00">10:00</option>
+                        <option value="10:30">10:30</option>
+                        <option value="11:00">11:00</option>
+                        <option value="11:30">11:30</option>
+                        <option value="12:00">12:00</option>
+                        <option value="12:30">12:30</option>
+                        <option value="13:00">13:00</option>
+                        <option value="13:30">13:30</option>
+                        <option value="14:00">14:00</option>
+                        <option value="14:30">14:30</option>
+                        <option value="15:00">15:00</option>
+                        <option value="15:30">15:30</option>
+                        <option value="16:00">16:00</option>
+                        <option value="16:30">16:30</option>
+                        <option value="17:00">17:00</option>
+                        <option value="17:30">17:30</option>
+                        <option value="18:00">18:00</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentService">Услуга *</label>
+                    <select id="appointmentService" name="service" required>
+                        <option value="">Выберите услугу</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentDoctor">Врач *</label>
+                    <select id="appointmentDoctor" name="doctor" required>
+                        <option value="">Выберите врача</option>
+                        <option value="Др. Смит">Др. Смит</option>
+                        <option value="Др. Джонс">Др. Джонс</option>
+                        <option value="Др. Уилсон">Др. Уилсон</option>
+                        <option value="Др. Браун">Др. Браун</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentNotes">Примечания</label>
+                    <textarea id="appointmentNotes" name="notes"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAppointmentModal()">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let patients = [];
+        let appointments = [];
+        let services = [];
+        let currentEditingId = null;
+        let selectedPatientId = null;
+        let currentView = 'table';
+        let currentWeek = new Date();
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Инициализация объединенной страницы пациентов и записей');
+            loadDataFromServer();
+            setupFormHandlers();
+            setupPatientSearch();
+        });
+
+        // Загрузка данных с сервера
+        async function loadDataFromServer() {
+            try {
+                console.log('Загружаем данные с сервера...');
+                
+                // Загружаем пациентов
+                const patientsResponse = await fetch('/api/patients');
+                if (patientsResponse.ok) {
+                    patients = await patientsResponse.json();
+                    console.log('Пациенты загружены:', patients.length);
+                    displayPatients();
+                }
+
+                // Загружаем записи
+                const appointmentsResponse = await fetch('/api/appointments');
+                if (appointmentsResponse.ok) {
+                    appointments = await appointmentsResponse.json();
+                    console.log('Записи загружены:', appointments.length);
+                    displayAppointments();
+                }
+
+                // Загружаем услуги
+                const servicesResponse = await fetch('/api/services');
+                if (servicesResponse.ok) {
+                    services = await servicesResponse.json();
+                    console.log('Услуги загружены:', services.length);
+                    loadServicesOptions();
+                }
+
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                showNotification('Ошибка загрузки данных', 'error');
+            }
+        }
+
+        // Отображение списка пациентов
+        function displayPatients() {
+            const patientsList = document.getElementById('patientsList');
+            patientsList.innerHTML = '';
+
+            patients.forEach(patient => {
+                const patientItem = document.createElement('div');
+                patientItem.className = 'patient-item';
+                patientItem.onclick = () => selectPatient(patient.id);
+                
+                patientItem.innerHTML = `
+                    <div class="patient-name">${patient.name}</div>
+                    <div class="patient-phone">${patient.phone || 'Телефон не указан'}</div>
+                `;
+                
+                patientsList.appendChild(patientItem);
+            });
+        }
+
+        // Выбор пациента
+        function selectPatient(patientId) {
+            selectedPatientId = patientId;
+            
+            // Обновляем активный класс
+            document.querySelectorAll('.patient-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.patient-item').classList.add('active');
+            
+            // Фильтруем записи по выбранному пациенту
+            filterAppointmentsByPatient(patientId);
+        }
+
+        // Фильтрация записей по пациенту
+        function filterAppointmentsByPatient(patientId) {
+            const filteredAppointments = patientId ? 
+                appointments.filter(apt => apt.patient_id === patientId) : 
+                appointments;
+            
+            displayAppointments(filteredAppointments);
+        }
+
+        // Поиск пациентов
+        function setupPatientSearch() {
+            const searchInput = document.getElementById('patientSearchInput');
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                const filteredPatients = patients.filter(patient => 
+                    patient.name.toLowerCase().includes(query) ||
+                    (patient.phone && patient.phone.includes(query)) ||
+                    (patient.email && patient.email.toLowerCase().includes(query))
+                );
+                displayFilteredPatients(filteredPatients);
+            });
+        }
+
+        // Отображение отфильтрованных пациентов
+        function displayFilteredPatients(filteredPatients) {
+            const patientsList = document.getElementById('patientsList');
+            patientsList.innerHTML = '';
+
+            filteredPatients.forEach(patient => {
+                const patientItem = document.createElement('div');
+                patientItem.className = 'patient-item';
+                patientItem.onclick = () => selectPatient(patient.id);
+                
+                patientItem.innerHTML = `
+                    <div class="patient-name">${patient.name}</div>
+                    <div class="patient-phone">${patient.phone || 'Телефон не указан'}</div>
+                `;
+                
+                patientsList.appendChild(patientItem);
+            });
+        }
+
+        // Отображение записей
+        function displayAppointments(appointmentsToShow = null) {
+            const appointmentsData = appointmentsToShow || appointments;
+            
+            if (currentView === 'calendar') {
+                generateWeeklyCalendar(appointmentsData);
+            } else {
+                displayAppointmentsTable(appointmentsData);
+            }
+        }
+
+        // Табличное отображение записей
+        function displayAppointmentsTable(appointmentsToShow) {
+            const tbody = document.getElementById('appointmentsTableBody');
+            tbody.innerHTML = '';
+
+            appointmentsToShow.forEach(appointment => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(appointment.date)}</td>
+                    <td>${appointment.time}</td>
+                    <td>${appointment.patient_name || 'Неизвестно'}</td>
+                    <td>${getServiceName(appointment.service)}</td>
+                    <td>${appointment.doctor}</td>
+                    <td><span class="status-badge status-${appointment.status}">${getStatusText(appointment.status)}</span></td>
+                    <td>${appointment.cost.toLocaleString()} ₸</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-small btn-edit" onclick="editAppointment(${appointment.id})">✏️</button>
+                            <button class="btn-small btn-delete" onclick="deleteAppointment(${appointment.id})">🗑️</button>
+                            ${appointment.status === 'scheduled' ? 
+                                `<button class="btn-small btn-complete" onclick="completeAppointment(${appointment.id})">✅</button>` : 
+                                ''
+                            }
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Переключение вида
+        function switchView(view) {
+            currentView = view;
+            
+            // Обновляем кнопки
+            document.getElementById('calendarViewBtn').classList.toggle('active', view === 'calendar');
+            document.getElementById('tableViewBtn').classList.toggle('active', view === 'table');
+            
+            // Показываем/скрываем соответствующие элементы
+            document.getElementById('calendarView').style.display = view === 'calendar' ? 'block' : 'none';
+            document.getElementById('tableView').style.display = view === 'table' ? 'block' : 'none';
+            
+            displayAppointments();
+        }
+
+        // Настройка обработчиков форм
+        function setupFormHandlers() {
+            // Форма пациента
+            const patientForm = document.getElementById('patientForm');
+            patientForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                savePatient();
+            });
+
+            // Форма записи
+            const appointmentForm = document.getElementById('appointmentForm');
+            appointmentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveAppointment();
+            });
+        }
+
+        // Открытие модального окна добавления пациента
+        function openAddPatientModal() {
+            currentEditingId = null;
+            document.getElementById('patientModalTitle').textContent = 'Добавить пациента';
+            document.getElementById('patientForm').reset();
+            document.getElementById('patientModal').style.display = 'block';
+        }
+
+        // Закрытие модального окна пациента
+        function closePatientModal() {
+            document.getElementById('patientModal').style.display = 'none';
+            document.getElementById('patientForm').reset();
+            currentEditingId = null;
+        }
+
+        // Сохранение пациента
+        async function savePatient() {
+            const formData = {
+                name: document.getElementById('patientName').value,
+                phone: document.getElementById('patientPhone').value || '',
+                email: document.getElementById('patientEmail').value || '',
+                birth_date: document.getElementById('patientBirthDate').value || '',
+                address: document.getElementById('patientAddress').value || '',
+                notes: document.getElementById('patientNotes').value || ''
+            };
+
+            try {
+                if (currentEditingId) {
+                    // Редактирование
+                    const response = await fetch(`/api/patients/${currentEditingId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (!response.ok) throw new Error('Ошибка обновления пациента');
+                    
+                    const result = await response.json();
+                    showNotification(result.message, 'success');
+                } else {
+                    // Добавление
+                    const response = await fetch('/api/patients', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (!response.ok) throw new Error('Ошибка добавления пациента');
+                    
+                    const result = await response.json();
+                    showNotification(result.message, 'success');
+                }
+
+                await loadDataFromServer();
+                closePatientModal();
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка сохранения пациента', 'error');
+            }
+        }
+
+        // Открытие модального окна добавления записи
+        function openAddAppointmentModal() {
+            currentEditingId = null;
+            document.getElementById('appointmentModalTitle').textContent = 'Записать на приём';
+            document.getElementById('appointmentForm').reset();
+            loadPatientsOptions();
+            document.getElementById('appointmentModal').style.display = 'block';
+        }
+
+        // Закрытие модального окна записи
+        function closeAppointmentModal() {
+            document.getElementById('appointmentModal').style.display = 'none';
+            document.getElementById('appointmentForm').reset();
+            currentEditingId = null;
+        }
+
+        // Загрузка опций пациентов в селект
+        function loadPatientsOptions() {
+            const select = document.getElementById('appointmentPatient');
+            select.innerHTML = '<option value="">Выберите пациента</option>';
+            
+            patients.forEach(patient => {
+                const option = document.createElement('option');
+                option.value = patient.id;
+                option.textContent = patient.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Загрузка опций услуг в селект
+        function loadServicesOptions() {
+            const select = document.getElementById('appointmentService');
+            select.innerHTML = '<option value="">Выберите услугу</option>';
+            
+            services.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service.category;
+                option.textContent = service.name;
+                option.setAttribute('data-price', service.price);
+                select.appendChild(option);
+            });
+        }
+
+        // Сохранение записи
+        async function saveAppointment() {
+            const formData = {
+                patient_id: parseInt(document.getElementById('appointmentPatient').value),
+                date: document.getElementById('appointmentDate').value,
+                time: document.getElementById('appointmentTime').value,
+                service: document.getElementById('appointmentService').value,
+                doctor: document.getElementById('appointmentDoctor').value,
+                notes: document.getElementById('appointmentNotes').value
+            };
+
+            // Получаем стоимость услуги
+            const serviceSelect = document.getElementById('appointmentService');
+            const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+            const cost = selectedOption ? parseInt(selectedOption.getAttribute('data-price')) || 0 : 0;
+
+            // Получаем имя пациента
+            const patient = patients.find(p => p.id === formData.patient_id);
+            formData.patient_name = patient ? patient.name : 'Неизвестно';
+
+            try {
+                if (currentEditingId) {
+                    // Редактирование
+                    const response = await fetch(`/api/appointments/${currentEditingId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({...formData, cost})
+                    });
+
+                    if (!response.ok) throw new Error('Ошибка обновления записи');
+                    
+                    const result = await response.json();
+                    showNotification(result.message, 'success');
+                } else {
+                    // Добавление
+                    const response = await fetch('/api/appointments', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({...formData, cost, status: 'scheduled'})
+                    });
+
+                    if (!response.ok) throw new Error('Ошибка добавления записи');
+                    
+                    const result = await response.json();
+                    showNotification(result.message, 'success');
+                }
+
+                await loadDataFromServer();
+                closeAppointmentModal();
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка сохранения записи', 'error');
+            }
+        }
+
+        // Редактирование записи
+        function editAppointment(id) {
+            const appointment = appointments.find(a => a.id === id);
+            if (!appointment) return;
+
+            currentEditingId = id;
+            document.getElementById('appointmentModalTitle').textContent = 'Редактировать запись';
+            
+            // Заполняем форму
+            document.getElementById('appointmentPatient').value = appointment.patient_id;
+            document.getElementById('appointmentDate').value = appointment.date;
+            document.getElementById('appointmentTime').value = appointment.time;
+            document.getElementById('appointmentService').value = appointment.service;
+            document.getElementById('appointmentDoctor').value = appointment.doctor;
+            document.getElementById('appointmentNotes').value = appointment.notes || '';
+            
+            loadPatientsOptions();
+            document.getElementById('appointmentModal').style.display = 'block';
+        }
+
+        // Удаление записи
+        async function deleteAppointment(id) {
+            if (!confirm('Вы уверены, что хотите удалить эту запись?')) return;
+
+            try {
+                const response = await fetch(`/api/appointments/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) throw new Error('Ошибка удаления записи');
+                
+                const result = await response.json();
+                showNotification(result.message, 'success');
+                await loadDataFromServer();
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка удаления записи', 'error');
+            }
+        }
+
+        // Завершение записи
+        async function completeAppointment(id) {
+            try {
+                const appointment = appointments.find(a => a.id === id);
+                if (!appointment) return;
+
+                const response = await fetch(`/api/appointments/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({...appointment, status: 'completed'})
+                });
+
+                if (!response.ok) throw new Error('Ошибка завершения записи');
+                
+                const result = await response.json();
+                showNotification(result.message, 'success');
+                await loadDataFromServer();
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка завершения записи', 'error');
+            }
+        }
+
+        // Календарные функции
+        function generateWeeklyCalendar(appointmentsToShow = null) {
+            const appointmentsData = appointmentsToShow || appointments;
+            const calendar = document.getElementById('weeklyCalendar');
+            calendar.innerHTML = '';
+
+            // Заголовки дней недели
+            const dayHeaders = ['Время', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            dayHeaders.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'day-header';
+                dayHeader.textContent = day;
+                calendar.appendChild(dayHeader);
+            });
+
+            // Временные слоты
+            const timeSlots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', 
+                             '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00'];
+
+            timeSlots.forEach(time => {
+                // Ячейка времени
+                const timeSlot = document.createElement('div');
+                timeSlot.className = 'time-slot';
+                timeSlot.textContent = time;
+                calendar.appendChild(timeSlot);
+
+                // Ячейки для каждого дня недели
+                for (let i = 0; i < 7; i++) {
+                    const dayDate = getWeekDate(i);
+                    const timeCell = document.createElement('div');
+                    timeCell.className = 'time-cell';
+                    
+                    const appointment = getAppointmentForTimeSlot(dayDate, time, appointmentsData);
+                    if (appointment) {
+                        timeCell.classList.add('occupied');
+                        const popup = document.createElement('div');
+                        popup.className = 'appointment-popup';
+                        popup.textContent = appointment.patient_name;
+                        popup.onclick = () => editAppointment(appointment.id);
+                        timeCell.appendChild(popup);
+                    } else {
+                        timeCell.onclick = () => openAddAppointmentForSlot(dayDate, time);
+                    }
+                    
+                    calendar.appendChild(timeCell);
+                }
+            });
+
+            // Обновляем отображение текущей недели
+            updateWeekDisplay();
+        }
+
+        function getWeekDate(dayIndex) {
+            const startOfWeek = new Date(currentWeek);
+            startOfWeek.setDate(currentWeek.getDate() - currentWeek.getDay() + 1 + dayIndex); // Понедельник = 1
+            return startOfWeek.toISOString().split('T')[0];
+        }
+
+        function getAppointmentForTimeSlot(date, time, appointmentsData) {
+            return appointmentsData.find(apt => apt.date === date && apt.time === time);
+        }
+
+        function openAddAppointmentForSlot(date, time) {
+            openAddAppointmentModal();
+            document.getElementById('appointmentDate').value = date;
+            document.getElementById('appointmentTime').value = time;
+        }
+
+        function changeWeek(direction) {
+            currentWeek.setDate(currentWeek.getDate() + (direction * 7));
+            generateWeeklyCalendar();
+        }
+
+        function updateWeekDisplay() {
+            const startOfWeek = new Date(currentWeek);
+            startOfWeek.setDate(currentWeek.getDate() - currentWeek.getDay() + 1);
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            
+            const display = document.getElementById('currentWeekDisplay');
+            display.textContent = `${formatDate(startOfWeek.toISOString().split('T')[0])} - ${formatDate(endOfWeek.toISOString().split('T')[0])}`;
+        }
+
+        // Утилиты
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU');
+        }
+
+        function getServiceName(category) {
+            const service = services.find(s => s.category === category);
+            return service ? service.name : category;
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'scheduled': 'Запланировано',
+                'completed': 'Завершено',
+                'cancelled': 'Отменено'
+            };
+            return statusMap[status] || status;
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // Закрытие модальных окон при клике вне их
+        window.onclick = function(event) {
+            const patientModal = document.getElementById('patientModal');
+            const appointmentModal = document.getElementById('appointmentModal');
+            
+            if (event.target === patientModal) {
+                closePatientModal();
+            }
+            if (event.target === appointmentModal) {
+                closeAppointmentModal();
+            }
+        }
+    </script>
+</body>
+</html>
