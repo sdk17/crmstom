@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Услуги и прайс-лист - CRM Стоматология</title>
+    <title>Настройки системы - CRM Стоматология</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -225,17 +225,22 @@
 </head>
 <body>
     <div class="container">
-        <h1>🦷 Услуги и прайс-лист</h1>
+        <h1>⚙️ Настройки системы</h1>
         
         <div class="nav">
             <a href="/">🏠 Главная</a>
             <a href="/patients.html">👥 Пациенты</a>
             <a href="/appointments.html">📅 Записи</a>
-            <a href="/services.html">🦷 Услуги</a>
+            <a href="/services.html">⚙️ Настройки</a>
             <a href="/reports.html">📊 Отчёты</a>
         </div>
 
         <div class="view-toggle">
+            <button id="servicesTabBtn" class="active" onclick="switchTab('services')">🦷 Услуги</button>
+            <button id="doctorsTabBtn" onclick="switchTab('doctors')">👨‍⚕️ Врачи</button>
+        </div>
+
+        <div class="view-toggle" id="servicesViewToggle" style="display: block;">
             <button id="cardViewBtn" class="active" onclick="switchView('card')">🃏 Карточки</button>
             <button id="tableViewBtn" onclick="switchView('table')">📋 Таблица</button>
         </div>
@@ -251,9 +256,17 @@
             </select>
         </div>
 
-        <button class="nav add-service" onclick="openAddServiceModal()">
-            ➕ Добавить услугу
-        </button>
+        <div id="servicesActions" style="display: block;">
+            <button class="nav add-service" onclick="openAddServiceModal()">
+                ➕ Добавить услугу
+            </button>
+        </div>
+
+        <div id="doctorsActions" style="display: none;">
+            <button class="nav add-service" onclick="openAddDoctorModal()">
+                ➕ Добавить врача
+            </button>
+        </div>
 
         <!-- Карточное представление -->
         <div id="cardView">
@@ -269,10 +282,8 @@
                     <tr>
                         <th>ID</th>
                         <th>Название</th>
-                        <th>Категория</th>
-                        <th>Описание</th>
-                        <th>Цена (₸)</th>
-                        <th>Длительность</th>
+                        <th>Тип</th>
+                        <th>Примечания</th>
                         <th>Действия</th>
                     </tr>
                 </thead>
@@ -280,6 +291,13 @@
                     <!-- Данные будут загружены через JavaScript -->
                 </tbody>
             </table>
+        </div>
+
+        <!-- Секция врачей -->
+        <div id="doctorsView" style="display: none;">
+            <div class="services-grid" id="doctorsGrid">
+                <!-- Карточки врачей будут сгенерированы через JavaScript -->
+            </div>
         </div>
     </div>
 
@@ -293,27 +311,18 @@
                     <input type="text" id="serviceName" required>
                 </div>
                 <div class="form-group">
-                    <label for="serviceCategory">Категория *</label>
-                    <select id="serviceCategory" required>
-                        <option value="">Выберите категорию</option>
-                        <option value="consultation">Консультации</option>
-                        <option value="treatment">Лечение</option>
-                        <option value="prosthetics">Протезирование</option>
-                        <option value="surgery">Хирургия</option>
-                        <option value="prevention">Профилактика</option>
+                    <label for="serviceType">Тип *</label>
+                    <select id="serviceType" required>
+                        <option value="">Выберите тип</option>
+                        <option value="Консультация">Консультация</option>
+                        <option value="Лечение кариеса">Лечение кариеса</option>
+                        <option value="Лечение пульпита">Лечение пульпита</option>
+                        <option value="Удаление зубов">Удаление зубов</option>
+                        <option value="Гигиена">Гигиена</option>
+                        <option value="Протезирование">Протезирование</option>
+                        <option value="Имплантация">Имплантация</option>
+                        <option value="Детская стоматология">Детская стоматология</option>
                     </select>
-                </div>
-                <div class="form-group">
-                    <label for="serviceDescription">Описание</label>
-                    <textarea id="serviceDescription" placeholder="Подробное описание услуги"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="servicePrice">Цена (₸) *</label>
-                    <input type="number" id="servicePrice" min="0" step="100" required>
-                </div>
-                <div class="form-group">
-                    <label for="serviceDuration">Длительность (минуты)</label>
-                    <input type="number" id="serviceDuration" min="1" step="5">
                 </div>
                 <div class="form-group">
                     <label for="serviceNotes">Примечания</label>
@@ -327,86 +336,44 @@
         </div>
     </div>
 
+    <!-- Модальное окно для добавления/редактирования врача -->
+    <div id="doctorModal" class="modal">
+        <div class="modal-content">
+            <h2 id="doctorModalTitle">Добавить врача</h2>
+            <form id="doctorForm">
+                <div class="form-group">
+                    <label for="doctorName">ФИО врача *</label>
+                    <input type="text" id="doctorName" required>
+                </div>
+                <div class="form-group">
+                    <label for="doctorEmail">Email</label>
+                    <input type="email" id="doctorEmail" placeholder="doctor@clinic.com">
+                </div>
+                <div class="form-group">
+                    <label for="doctorLogin">Логин</label>
+                    <input type="text" id="doctorLogin" placeholder="doctor_login">
+                </div>
+                <div class="form-group">
+                    <label for="doctorPassword">Пароль</label>
+                    <input type="password" id="doctorPassword" placeholder="Пароль для входа">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeDoctorModal()">Отмена</button>
+                    <button type="submit" class="btn-save">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Временные данные услуг (в реальном проекте это будет API)
-        let services = [
-            {
-                id: 1,
-                name: "Консультация стоматолога",
-                category: "consultation",
-                description: "Первичный осмотр и консультация врача-стоматолога",
-                price: 5000,
-                duration: 30,
-                notes: "Включает осмотр и составление плана лечения"
-            },
-            {
-                id: 2,
-                name: "Профессиональная чистка зубов",
-                category: "prevention",
-                description: "Ультразвуковая чистка и полировка зубов",
-                price: 8000,
-                duration: 45,
-                notes: "Рекомендуется каждые 6 месяцев"
-            },
-            {
-                id: 3,
-                name: "Лечение кариеса",
-                category: "treatment",
-                description: "Пломбирование кариозной полости",
-                price: 15000,
-                duration: 60,
-                notes: "Включает анестезию и пломбу"
-            },
-            {
-                id: 4,
-                name: "Удаление зуба",
-                category: "surgery",
-                description: "Простое удаление зуба под местной анестезией",
-                price: 12000,
-                duration: 30,
-                notes: "Сложное удаление - дополнительная оплата"
-            },
-            {
-                id: 5,
-                name: "Коронка металлокерамическая",
-                category: "prosthetics",
-                description: "Изготовление и установка металлокерамической коронки",
-                price: 50000,
-                duration: 120,
-                notes: "Включает слепки и примерки"
-            },
-            {
-                id: 6,
-                name: "Имплантация зуба",
-                category: "surgery",
-                description: "Установка зубного импланта",
-                price: 100000,
-                duration: 90,
-                notes: "Требует предварительной консультации"
-            },
-            {
-                id: 7,
-                name: "Отбеливание зубов",
-                category: "treatment",
-                description: "Профессиональное отбеливание зубов",
-                price: 25000,
-                duration: 90,
-                notes: "Результат сохраняется до 2 лет"
-            },
-            {
-                id: 8,
-                name: "Виниры",
-                category: "prosthetics",
-                description: "Изготовление и установка керамических виниров",
-                price: 80000,
-                duration: 150,
-                notes: "Требует обточки зубов"
-            }
-        ];
+        // Данные услуг и врачей загружаются с сервера
+        let services = [];
+        let doctors = [];
 
         let currentEditingId = null;
         let currentView = 'card';
         let currentCategory = '';
+        let currentTab = 'services';
 
         // Глобальные функции для кнопок
         window.openAddServiceModal = function() {
@@ -431,10 +398,7 @@
             currentEditingId = id;
             document.getElementById('modalTitle').textContent = 'Редактировать услугу';
             document.getElementById('serviceName').value = service.name;
-            document.getElementById('serviceCategory').value = service.category;
-            document.getElementById('serviceDescription').value = service.description;
-            document.getElementById('servicePrice').value = service.price;
-            document.getElementById('serviceDuration').value = service.duration;
+            document.getElementById('serviceType').value = service.type;
             document.getElementById('serviceNotes').value = service.notes;
             document.getElementById('serviceModal').style.display = 'block';
         };
@@ -479,9 +443,89 @@
             loadServices();
         };
 
+        // Функции для управления врачами
+        window.switchTab = function(tab) {
+            console.log('Переключаем вкладку на:', tab);
+            currentTab = tab;
+            
+            if (tab === 'services') {
+                document.getElementById('servicesTabBtn').classList.add('active');
+                document.getElementById('doctorsTabBtn').classList.remove('active');
+                document.getElementById('servicesViewToggle').style.display = 'block';
+                document.getElementById('servicesActions').style.display = 'block';
+                document.getElementById('doctorsActions').style.display = 'none';
+                document.getElementById('cardView').style.display = 'block';
+                document.getElementById('tableView').style.display = 'none';
+                document.getElementById('doctorsView').style.display = 'none';
+                loadServices();
+            } else {
+                document.getElementById('doctorsTabBtn').classList.add('active');
+                document.getElementById('servicesTabBtn').classList.remove('active');
+                document.getElementById('servicesViewToggle').style.display = 'none';
+                document.getElementById('servicesActions').style.display = 'none';
+                document.getElementById('doctorsActions').style.display = 'block';
+                document.getElementById('cardView').style.display = 'none';
+                document.getElementById('tableView').style.display = 'none';
+                document.getElementById('doctorsView').style.display = 'block';
+                loadDoctors();
+            }
+        };
+
+        window.openAddDoctorModal = function() {
+            console.log('Открываем модальное окно добавления врача');
+            currentEditingId = null;
+            document.getElementById('doctorModalTitle').textContent = 'Добавить врача';
+            document.getElementById('doctorForm').reset();
+            document.getElementById('doctorModal').style.display = 'block';
+        };
+
+        window.closeDoctorModal = function() {
+            console.log('Закрываем модальное окно врача');
+            document.getElementById('doctorModal').style.display = 'none';
+            currentEditingId = null;
+        };
+
+        window.editDoctor = function(id) {
+            console.log('Редактируем врача с ID:', id);
+            const doctor = doctors.find(d => d.id === id);
+            if (!doctor) return;
+
+            currentEditingId = id;
+            document.getElementById('doctorModalTitle').textContent = 'Редактировать врача';
+            document.getElementById('doctorName').value = doctor.name;
+            document.getElementById('doctorEmail').value = doctor.email || '';
+            document.getElementById('doctorLogin').value = doctor.login || '';
+            document.getElementById('doctorPassword').value = '';
+            document.getElementById('doctorModal').style.display = 'block';
+        };
+
+        window.deleteDoctor = function(id) {
+            console.log('Удаляем врача с ID:', id);
+            if (confirm('Вы уверены, что хотите удалить этого врача?')) {
+                doctors = doctors.filter(d => d.id !== id);
+                loadDoctors();
+            }
+        };
+
+        // Проверка авторизации
+        function checkAuth() {
+            const userRole = localStorage.getItem('userRole');
+            if (!userRole) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            return true;
+        }
+
         // Загружаем данные при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, инициализируем страницу услуг');
+            console.log('DOM загружен, проверяем авторизацию...');
+            
+            if (!checkAuth()) {
+                return;
+            }
+            
+            console.log('Авторизация успешна, инициализируем страницу настроек');
             loadServices();
             setupForm();
         });
@@ -492,7 +536,8 @@
                 const response = await fetch('/api/services');
                 if (!response.ok) throw new Error('Ошибка загрузки услуг');
                 
-                services = await response.json();
+                const respJson = await response.json();
+                services = Array.isArray(respJson) ? respJson : (respJson.data || []);
                 console.log('Услуги загружены:', services);
                 
                 if (currentView === 'card') {
@@ -511,18 +556,16 @@
             grid.innerHTML = '';
 
             const filteredServices = currentCategory ? 
-                services.filter(s => s.category === currentCategory) : 
+                services.filter(s => s.type === currentCategory) : 
                 services;
 
             filteredServices.forEach(service => {
                 const card = document.createElement('div');
                 card.className = 'service-card';
                 card.innerHTML = `
-                    <div class="service-category">${getCategoryName(service.category)}</div>
+                    <div class="service-category">${service.type || 'Без типа'}</div>
                     <div class="service-name">${service.name}</div>
-                    <div class="service-description">${service.description}</div>
-                    <div class="service-price">${service.price.toLocaleString()} ₸</div>
-                    <div class="service-duration">⏱️ ${service.duration} мин</div>
+                    <div class="service-description">${service.notes || 'Нет примечаний'}</div>
                     <div class="service-actions">
                         <button class="btn btn-view" onclick="viewService(${service.id})">👁</button>
                         <button class="btn btn-edit" onclick="editService(${service.id})">✏️</button>
@@ -538,7 +581,7 @@
             tbody.innerHTML = '';
 
             const filteredServices = currentCategory ? 
-                services.filter(s => s.category === currentCategory) : 
+                services.filter(s => s.type === currentCategory) : 
                 services;
 
             filteredServices.forEach(service => {
@@ -546,10 +589,8 @@
                 row.innerHTML = `
                     <td>${service.id}</td>
                     <td>${service.name}</td>
-                    <td>${getCategoryName(service.category)}</td>
-                    <td>${service.description}</td>
-                    <td>${service.price.toLocaleString()}</td>
-                    <td>${service.duration} мин</td>
+                    <td>${service.type || '-'}</td>
+                    <td>${service.notes || '-'}</td>
                     <td>
                         <div class="service-actions">
                             <button class="btn btn-view" onclick="viewService(${service.id})">👁</button>
@@ -559,6 +600,86 @@
                     </td>
                 `;
             });
+        }
+
+        // Функции для работы с врачами
+        async function loadDoctors() {
+            try {
+                console.log('Загружаем врачей (localStorage)...');
+                const stored = localStorage.getItem('doctors');
+                if (stored) {
+                    doctors = JSON.parse(stored);
+                } else {
+                    // Стартовые данные по умолчанию
+                    doctors = [
+                        { id: 1, name: "Др. Иванов И.И.", email: "ivanov@clinic.com", login: "dr_ivanov", password: "" },
+                        { id: 2, name: "Др. Петрова А.С.", email: "petrova@clinic.com", login: "dr_petrova", password: "" },
+                        { id: 3, name: "Др. Сидоров П.А.", email: "sidorov@clinic.com", login: "dr_sidorov", password: "" }
+                    ];
+                    localStorage.setItem('doctors', JSON.stringify(doctors));
+                }
+                console.log('Врачи загружены:', doctors);
+                loadDoctorsCards();
+            } catch (error) {
+                console.error('Ошибка загрузки врачей:', error);
+                showNotification('Ошибка загрузки врачей', 'error');
+            }
+        }
+
+        function loadDoctorsCards() {
+            const grid = document.getElementById('doctorsGrid');
+            grid.innerHTML = '';
+
+            doctors.forEach(doctor => {
+                const card = document.createElement('div');
+                card.className = 'service-card';
+                card.innerHTML = `
+                    <div class="service-category">Врач</div>
+                    <div class="service-name">${doctor.name}</div>
+                    <div class="service-description">${doctor.email || 'Email не указан'}</div>
+                    <div class="service-actions">
+                        <button class="btn btn-edit" onclick="editDoctor(${doctor.id})">✏️</button>
+                        <button class="btn btn-delete" onclick="deleteDoctor(${doctor.id})">🗑️</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        window.saveDoctor = async function() {
+            const formData = {
+                name: document.getElementById('doctorName').value,
+                email: document.getElementById('doctorEmail').value,
+                login: document.getElementById('doctorLogin').value,
+                password: document.getElementById('doctorPassword').value
+            };
+
+            try {
+                if (currentEditingId) {
+                    // Редактирование существующего врача
+                    const doctorIndex = doctors.findIndex(d => d.id === currentEditingId);
+                    if (doctorIndex !== -1) {
+                        doctors[doctorIndex] = { ...doctors[doctorIndex], ...formData };
+                        showNotification('Врач обновлен успешно', 'success');
+                    }
+                } else {
+                    // Добавление нового врача
+                    const newDoctor = {
+                        id: Math.max(...doctors.map(d => d.id), 0) + 1,
+                        ...formData
+                    };
+                    doctors.push(newDoctor);
+                    showNotification('Врач добавлен успешно', 'success');
+                }
+                // Сохраняем в localStorage
+                localStorage.setItem('doctors', JSON.stringify(doctors));
+                loadDoctors();
+                closeDoctorModal();
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showNotification('Ошибка сохранения врача', 'error');
+            }
         }
 
         function switchView(view) {
@@ -585,11 +706,21 @@
         }
 
         function setupForm() {
-            const form = document.getElementById('serviceForm');
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                saveService();
-            });
+            const serviceForm = document.getElementById('serviceForm');
+            if (serviceForm) {
+                serviceForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveService();
+                });
+            }
+
+            const doctorForm = document.getElementById('doctorForm');
+            if (doctorForm) {
+                doctorForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    saveDoctor();
+                });
+            }
         }
 
         function openAddServiceModal() {
@@ -606,10 +737,7 @@
             currentEditingId = id;
             document.getElementById('modalTitle').textContent = 'Редактировать услугу';
             document.getElementById('serviceName').value = service.name;
-            document.getElementById('serviceCategory').value = service.category;
-            document.getElementById('serviceDescription').value = service.description;
-            document.getElementById('servicePrice').value = service.price;
-            document.getElementById('serviceDuration').value = service.duration;
+            document.getElementById('serviceType').value = service.type;
             document.getElementById('serviceNotes').value = service.notes;
             document.getElementById('serviceModal').style.display = 'block';
         }
@@ -618,7 +746,7 @@
             const service = services.find(s => s.id === id);
             if (!service) return;
 
-            alert(`Услуга: ${service.name}\nКатегория: ${getCategoryName(service.category)}\nОписание: ${service.description}\nЦена: ${service.price.toLocaleString()} ₸\nДлительность: ${service.duration} мин\nПримечания: ${service.notes}`);
+            alert(`Услуга: ${service.name}\nТип: ${service.type || '-'}\nПримечания: ${service.notes || '-'}`);
         }
 
         window.deleteService = async function(id) {
@@ -644,10 +772,7 @@
         window.saveService = async function() {
             const formData = {
                 name: document.getElementById('serviceName').value,
-                category: document.getElementById('serviceCategory').value,
-                description: document.getElementById('serviceDescription').value,
-                price: parseInt(document.getElementById('servicePrice').value),
-                duration: parseInt(document.getElementById('serviceDuration').value) || 0,
+                type: document.getElementById('serviceType').value,
                 notes: document.getElementById('serviceNotes').value
             };
 
@@ -759,9 +884,13 @@
 
         // Закрытие модального окна при клике вне его
         window.onclick = function(event) {
-            const modal = document.getElementById('serviceModal');
-            if (event.target === modal) {
+            const serviceModal = document.getElementById('serviceModal');
+            const doctorModal = document.getElementById('doctorModal');
+            
+            if (event.target === serviceModal) {
                 closeServiceModal();
+            } else if (event.target === doctorModal) {
+                closeDoctorModal();
             }
         }
     </script>

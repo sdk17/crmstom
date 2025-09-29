@@ -33,92 +33,68 @@ func (r *MemoryServiceRepository) seedData() {
 	now := time.Now()
 	testServices := []*domain.Service{
 		{
-			ID:          1,
-			Name:        "Консультация",
-			Category:    "diagnosis",
-			Description: "Первичный осмотр и консультация",
-			Price:       5000,
-			Duration:    30,
-			Notes:       "Включает рентген",
-			CreatedAt:   now,
-			UpdatedAt:   now,
+			ID:        1,
+			Name:      "Консультация",
+			Type:      "Консультация",
+			Notes:     "Первичный осмотр и консультация",
+			CreatedAt: now,
+			UpdatedAt: now,
 		},
 		{
-			ID:          2,
-			Name:        "Лечение кариеса",
-			Category:    "treatment",
-			Description: "Пломбирование зуба",
-			Price:       15000,
-			Duration:    60,
-			Notes:       "Световая пломба",
-			CreatedAt:   now,
-			UpdatedAt:   now,
+			ID:        2,
+			Name:      "Лечение кариеса",
+			Type:      "Лечение кариеса",
+			Notes:     "Пломбирование зуба",
+			CreatedAt: now,
+			UpdatedAt: now,
 		},
 		{
-			ID:          3,
-			Name:        "Протезирование",
-			Category:    "prosthetics",
-			Description: "Изготовление и установка коронки",
-			Price:       50000,
-			Duration:    120,
-			Notes:       "Металлокерамика",
-			CreatedAt:   now,
-			UpdatedAt:   now,
+			ID:        3,
+			Name:      "Протезирование",
+			Type:      "Протезирование",
+			Notes:     "Изготовление и установка коронки",
+			CreatedAt: now,
+			UpdatedAt: now,
 		},
 		{
-			ID:          4,
-			Name:        "Имплантация",
-			Category:    "surgery",
-			Description: "Установка зубного импланта",
-			Price:       100000,
-			Duration:    180,
-			Notes:       "Титан",
-			CreatedAt:   now,
-			UpdatedAt:   now,
+			ID:        4,
+			Name:      "Имплантация",
+			Type:      "Имплантация",
+			Notes:     "Установка зубного импланта",
+			CreatedAt: now,
+			UpdatedAt: now,
 		},
 		{
-			ID:          5,
-			Name:        "Отбеливание",
-			Category:    "cosmetic",
-			Description: "Профессиональное отбеливание зубов",
-			Price:       25000,
-			Duration:    90,
-			Notes:       "Без вреда для эмали",
-			CreatedAt:   now,
-			UpdatedAt:   now,
+			ID:        5,
+			Name:      "Отбеливание",
+			Type:      "Гигиена",
+			Notes:     "Профессиональное отбеливание зубов",
+			CreatedAt: now,
+			UpdatedAt: now,
 		},
 		{
-			ID:          6,
-			Name:        "Удаление зуба",
-			Category:    "surgery",
-			Description: "Хирургическое удаление зуба",
-			Price:       8000,
-			Duration:    45,
-			Notes:       "Простое удаление",
-			CreatedAt:   now,
-			UpdatedAt:   now,
+			ID:        6,
+			Name:      "Удаление зуба",
+			Type:      "Удаление зубов",
+			Notes:     "Хирургическое удаление зуба",
+			CreatedAt: now,
+			UpdatedAt: now,
 		},
 		{
-			ID:          7,
-			Name:        "Лечение каналов",
-			Category:    "treatment",
-			Description: "Эндодонтическое лечение",
-			Price:       20000,
-			Duration:    90,
-			Notes:       "Многоканальный зуб",
-			CreatedAt:   now,
-			UpdatedAt:   now,
+			ID:        7,
+			Name:      "Лечение каналов",
+			Type:      "Лечение пульпита",
+			Notes:     "Эндодонтическое лечение",
+			CreatedAt: now,
+			UpdatedAt: now,
 		},
 		{
-			ID:          8,
-			Name:        "Чистка зубов",
-			Category:    "prevention",
-			Description: "Профессиональная гигиена",
-			Price:       12000,
-			Duration:    60,
-			Notes:       "Ультразвук + Air Flow",
-			CreatedAt:   now,
-			UpdatedAt:   now,
+			ID:        8,
+			Name:      "Чистка зубов",
+			Type:      "Гигиена",
+			Notes:     "Профессиональная гигиена",
+			CreatedAt: now,
+			UpdatedAt: now,
 		},
 	}
 
@@ -195,7 +171,7 @@ func (r *MemoryServiceRepository) GetByCategory(category string) ([]*domain.Serv
 
 	var result []*domain.Service
 	for _, service := range r.services {
-		if service.Category == category {
+		if service.Type == category {
 			result = append(result, service)
 		}
 	}
@@ -212,8 +188,8 @@ func (r *MemoryServiceRepository) Search(query string) ([]*domain.Service, error
 
 	for _, service := range r.services {
 		if strings.Contains(strings.ToLower(service.Name), query) ||
-			strings.Contains(strings.ToLower(service.Category), query) ||
-			strings.Contains(strings.ToLower(service.Description), query) {
+			strings.Contains(strings.ToLower(service.Type), query) ||
+			strings.Contains(strings.ToLower(service.Notes), query) {
 			result = append(result, service)
 		}
 	}

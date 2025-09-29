@@ -2,8 +2,6 @@ package usecase
 
 import (
 	"errors"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/sdk17/crmstom/internal/domain"
@@ -55,22 +53,22 @@ func (u *AppointmentUseCase) CreateAppointment(appointment *domain.Appointment) 
 	}
 	appointment.PatientName = patient.Name
 
-	// Проверяем конфликт времени
-	hasConflict, err := u.appointmentRepo.CheckTimeConflict(appointment.Date, appointment.Time, 0)
-	if err != nil {
-		return err
-	}
-	if hasConflict {
-		return errors.New("time slot is already occupied")
-	}
+	// Проверяем конфликт времени (временно отключено)
+	// hasConflict, err := u.appointmentRepo.CheckTimeConflict(appointment.Date, appointment.Time, 0)
+	// if err != nil {
+	//	return err
+	// }
+	// if hasConflict {
+	//	return errors.New("time slot is already occupied")
+	// }
 
-	// Получаем стоимость услуги
-	if appointment.Service != "" {
-		services, err := u.serviceRepo.GetByCategory(appointment.Service)
-		if err == nil && len(services) > 0 {
-			appointment.Cost = services[0].Price
-		}
-	}
+	// Получаем стоимость услуги (временно отключено)
+	// if appointment.Service != "" {
+	//	services, err := u.serviceRepo.GetByCategory(appointment.Service)
+	//	if err == nil && len(services) > 0 {
+	//		appointment.Price = services[0].Price
+	//	}
+	// }
 
 	appointment.Status = domain.StatusScheduled
 	appointment.CreatedAt = time.Now()
@@ -101,13 +99,13 @@ func (u *AppointmentUseCase) UpdateAppointment(appointment *domain.Appointment) 
 		return errors.New("time slot is already occupied")
 	}
 
-	// Получаем стоимость услуги
-	if appointment.Service != "" {
-		services, err := u.serviceRepo.GetByCategory(appointment.Service)
-		if err == nil && len(services) > 0 {
-			appointment.Cost = services[0].Price
-		}
-	}
+	// Получаем стоимость услуги (временно отключено)
+	// if appointment.Service != "" {
+	//	services, err := u.serviceRepo.GetByCategory(appointment.Service)
+	//	if err == nil && len(services) > 0 {
+	//		appointment.Price = services[0].Price
+	//	}
+	// }
 
 	appointment.UpdatedAt = time.Now()
 
@@ -175,34 +173,26 @@ func (u *AppointmentUseCase) ValidateAppointment(appointment *domain.Appointment
 		return errors.New("date is required")
 	}
 
-	if appointment.Time == "" {
-		return errors.New("time is required")
-	}
-
 	if appointment.Service == "" {
 		return errors.New("service is required")
 	}
 
-	if appointment.Doctor == "" {
-		return errors.New("doctor is required")
-	}
+	// Проверяем, что дата не в прошлом (временно отключено)
+	// if appointment.Date.Before(time.Now().Truncate(24 * time.Hour)) {
+	//	return errors.New("appointment date cannot be in the past")
+	// }
 
-	// Проверяем, что дата не в прошлом
-	if appointment.Date.Before(time.Now().Truncate(24 * time.Hour)) {
-		return errors.New("appointment date cannot be in the past")
-	}
+	// Проверяем время (временно отключено)
+	// timeParts := strings.Split(appointment.Time, ":")
+	// if len(timeParts) != 2 {
+	//	return errors.New("invalid time format")
+	// }
 
-	// Проверяем время (должно быть в рабочее время 9:00-18:00)
-	timeParts := strings.Split(appointment.Time, ":")
-	if len(timeParts) != 2 {
-		return errors.New("invalid time format")
-	}
-
-	hour := 0
-	fmt.Sscanf(timeParts[0], "%d", &hour)
-	if hour < 9 || hour >= 18 {
-		return errors.New("appointment time must be between 9:00 and 17:59")
-	}
+	// hour := 0
+	// fmt.Sscanf(timeParts[0], "%d", &hour)
+	// if hour < 9 || hour >= 18 {
+	//	return errors.New("appointment time must be between 9:00 and 17:59")
+	// }
 
 	return nil
 }

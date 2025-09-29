@@ -114,7 +114,7 @@
             <a href="/">🏠 Главная</a>
             <a href="/patients.html">👥 Пациенты</a>
             <a href="/appointments.html">📅 Записи</a>
-            <a href="/services.html">🦷 Услуги</a>
+            <a href="/services.html">⚙️ Настройки</a>
             <a href="/reports.html">🔄 Обновить</a>
         </div>
 
@@ -160,7 +160,7 @@
 
         async function loadFinanceData() {
             try {
-                const response = await fetch('/reports/finance');
+                const response = await fetch('/api/dashboard');
                 if (!response.ok) {
                     throw new Error('Ошибка загрузки данных');
                 }
@@ -179,26 +179,35 @@
             }
         }
 
-        function displayData(data) {
+        function displayData(response) {
+            const data = response.data;
+            
             // Обновляем общий доход
             document.getElementById('totalAmount').textContent = 
-                new Intl.NumberFormat('ru-RU').format(data.total_income);
+                new Intl.NumberFormat('ru-RU').format(data.total_revenue || 0);
 
             // Заполняем таблицу
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
             
-            // Сортируем данные по дате
-            const sortedByDay = data.by_day.sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            sortedByDay.forEach(day => {
-                const row = tableBody.insertRow();
-                row.insertCell(0).textContent = formatDate(day.date);
-                row.insertCell(1).textContent = new Intl.NumberFormat('ru-RU').format(day.income);
-            });
+            // Если есть данные по дням, используем их, иначе показываем общую статистику
+            if (data.by_day && data.by_day.length > 0) {
+                const sortedByDay = data.by_day.sort((a, b) => new Date(a.date) - new Date(b.date));
+                
+                sortedByDay.forEach(day => {
+                    const row = tableBody.insertRow();
+                    row.insertCell(0).textContent = formatDate(day.date);
+                    row.insertCell(1).textContent = new Intl.NumberFormat('ru-RU').format(day.income);
+                });
 
-            // Рисуем график
-            drawChart(sortedByDay);
+                // Рисуем график
+                drawChart(sortedByDay);
+            } else {
+                // Показываем общую статистику
+                const row = tableBody.insertRow();
+                row.insertCell(0).textContent = 'Общий доход';
+                row.insertCell(1).textContent = new Intl.NumberFormat('ru-RU').format(data.total_revenue || 0);
+            }
         }
 
         function formatDate(dateString) {

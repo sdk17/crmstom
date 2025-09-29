@@ -11,16 +11,19 @@ import (
 type DashboardUseCase struct {
 	patientRepo     domain.PatientRepository
 	appointmentRepo domain.AppointmentRepository
+	serviceRepo     domain.ServiceRepository
 }
 
 // NewDashboardUseCase создает новый экземпляр DashboardUseCase
 func NewDashboardUseCase(
 	patientRepo domain.PatientRepository,
 	appointmentRepo domain.AppointmentRepository,
+	serviceRepo domain.ServiceRepository,
 ) *DashboardUseCase {
 	return &DashboardUseCase{
 		patientRepo:     patientRepo,
 		appointmentRepo: appointmentRepo,
+		serviceRepo:     serviceRepo,
 	}
 }
 
@@ -41,35 +44,24 @@ func (u *DashboardUseCase) GetDashboardStats() (*domain.DashboardStats, error) {
 	// Подсчитываем статистику
 	today := time.Now().Truncate(24 * time.Hour)
 	totalPatients := len(patients)
-	totalAppointments := len(appointments)
-	completedAppointments := 0
-	totalRevenue := 0.0
 	todayAppointments := 0
-	pendingAppointments := 0
+	todayRevenue := 0.0
 
 	for _, appointment := range appointments {
-		if appointment.Status == domain.StatusCompleted {
-			completedAppointments++
-			totalRevenue += float64(appointment.Cost)
-		}
-		
 		appointmentDate := appointment.Date.Truncate(24 * time.Hour)
 		if appointmentDate.Equal(today) {
 			todayAppointments++
-		}
-		
-		if appointment.Status == domain.StatusScheduled {
-			pendingAppointments++
+			// Доход за сегодня (только завершенные записи)
+			if appointment.Status == domain.StatusCompleted {
+				todayRevenue += appointment.Price
+			}
 		}
 	}
 
 	return &domain.DashboardStats{
-		TotalPatients:         totalPatients,
-		TotalAppointments:     totalAppointments,
-		CompletedAppointments: completedAppointments,
-		TotalRevenue:          totalRevenue,
-		TodayAppointments:     todayAppointments,
-		PendingAppointments:   pendingAppointments,
+		TodayAppointments: todayAppointments,
+		TodayRevenue:      todayRevenue,
+		TotalPatients:     totalPatients,
 	}, nil
 }
 
@@ -87,9 +79,9 @@ func (u *DashboardUseCase) GetFinanceReport() (*domain.FinanceReport, error) {
 
 	for _, appointment := range appointments {
 		if appointment.Status == domain.StatusCompleted {
-			income := float64(appointment.Cost)
+			income := appointment.Price
 			totalIncome += income
-			
+
 			// Доход по дням
 			dateStr := appointment.Date.Format("2006-01-02")
 			dayIncome[dateStr] += income

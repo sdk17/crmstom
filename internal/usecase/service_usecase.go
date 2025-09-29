@@ -94,28 +94,12 @@ func (u *ServiceUseCase) ValidateService(service *domain.Service) error {
 		return errors.New("service name is too long")
 	}
 
-	if strings.TrimSpace(service.Category) == "" {
-		return errors.New("service category is required")
+	if strings.TrimSpace(service.Type) == "" {
+		return errors.New("service type is required")
 	}
 
-	if len(service.Category) > 50 {
-		return errors.New("service category is too long")
-	}
-
-	if service.Price < 0 {
-		return errors.New("service price cannot be negative")
-	}
-
-	if service.Duration < 0 {
-		return errors.New("service duration cannot be negative")
-	}
-
-	if service.Duration > 480 { // 8 часов
-		return errors.New("service duration is too long")
-	}
-
-	if service.Description != "" && len(service.Description) > 500 {
-		return errors.New("service description is too long")
+	if len(service.Type) > 50 {
+		return errors.New("service type is too long")
 	}
 
 	if service.Notes != "" && len(service.Notes) > 500 {

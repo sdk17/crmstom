@@ -360,6 +360,72 @@
         .notification.error {
             background: linear-gradient(135deg, #dc3545, #c82333);
         }
+        
+        /* Стили для календаря */
+        .weekly-calendar {
+            display: grid;
+            grid-template-columns: 80px repeat(7, 1fr);
+            gap: 1px;
+            background-color: #ddd;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+        }
+        .time-slot {
+            background-color: #f8f9fa;
+            padding: 10px 5px;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 1px solid #ddd;
+        }
+        .day-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .day-name {
+            font-size: 14px;
+        }
+        .day-number {
+            font-size: 18px;
+            margin-top: 5px;
+        }
+        .time-cell {
+            background-color: white;
+            border: 1px solid #ddd;
+            min-height: 40px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+        .time-cell:hover {
+            background-color: #e3f2fd;
+        }
+        .time-cell.occupied {
+            background-color: #f5f5f5;
+            cursor: default;
+        }
+        .time-cell.today {
+            background-color: #fff3cd;
+        }
+        .appointment-popup {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #007bff;
+            color: white;
+            padding: 5px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
@@ -370,7 +436,7 @@
             <a href="/">🏠 Главная</a>
             <a href="/patients.html">👥 Пациенты</a>
             <a href="/appointments.html">📅 Записи</a>
-            <a href="/services.html">🦷 Услуги</a>
+            <a href="/services.html">⚙️ Настройки</a>
             <a href="/reports.html">📊 Отчёты</a>
         </div>
 
@@ -502,10 +568,18 @@
                     <label for="appointmentDoctor">Врач *</label>
                     <select id="appointmentDoctor" required>
                         <option value="">Выберите врача</option>
-                        <option value="dr_smith">Др. Смит</option>
-                        <option value="dr_jones">Др. Джонс</option>
-                        <option value="dr_wilson">Др. Уилсон</option>
+                        <option value="Др. Смит">Др. Смит</option>
+                        <option value="Др. Джонс">Др. Джонс</option>
+                        <option value="Др. Уилсон">Др. Уилсон</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentPrice">Цена (₸) *</label>
+                    <input type="text" id="appointmentPrice" placeholder="Введите цену" required>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentDuration">Длительность (минуты) *</label>
+                    <input type="text" id="appointmentDuration" placeholder="Введите длительность" required>
                 </div>
                 <div class="form-group">
                     <label for="appointmentNotes">Примечания</label>
@@ -520,59 +594,10 @@
     </div>
 
     <script>
-        // Временные данные записей (в реальном проекте это будет API)
-        let appointments = [
-            {
-                id: 1,
-                patientId: 1,
-                patientName: "Иванов Иван Иванович",
-                date: "2025-01-25",
-                time: "10:00",
-                service: "Консультация",
-                doctor: "Др. Смит",
-                status: "scheduled",
-                cost: 5000,
-                notes: "Первый визит"
-            },
-            {
-                id: 2,
-                patientId: 2,
-                patientName: "Петрова Анна Сергеевна",
-                date: "2025-01-25",
-                time: "14:30",
-                service: "Лечение кариеса",
-                doctor: "Др. Джонс",
-                status: "scheduled",
-                cost: 15000,
-                notes: "Беременная пациентка"
-            },
-            {
-                id: 3,
-                patientId: 3,
-                patientName: "Сидоров Петр Александрович",
-                date: "2025-01-26",
-                time: "09:00",
-                service: "Протезирование",
-                doctor: "Др. Уилсон",
-                status: "completed",
-                cost: 50000,
-                notes: "Установка коронки"
-            }
-        ];
-
-        let patients = [
-            { id: 1, name: "Иванов Иван Иванович" },
-            { id: 2, name: "Петрова Анна Сергеевна" },
-            { id: 3, name: "Сидоров Петр Александрович" }
-        ];
-
-        let services = [
-            { id: "consultation", name: "Консультация", price: 5000 },
-            { id: "cleaning", name: "Чистка зубов", price: 8000 },
-            { id: "cavity", name: "Лечение кариеса", price: 15000 },
-            { id: "prosthetics", name: "Протезирование", price: 50000 },
-            { id: "implant", name: "Имплантация", price: 100000 }
-        ];
+        // Данные загружаются с сервера
+        let appointments = [];
+        let patients = [];
+        let services = [];
 
         let currentEditingId = null;
         let currentView = 'calendar';
@@ -595,16 +620,29 @@
                 // Загружаем пациентов
                 const patientsResponse = await fetch('/api/patients');
                 if (patientsResponse.ok) {
-                    patients = await patientsResponse.json();
+                    const patientsData = await patientsResponse.json();
+                    patients = Array.isArray(patientsData) ? patientsData : (patientsData.data || []);
                 }
 
                 // Загружаем записи
                 const appointmentsResponse = await fetch('/api/appointments');
                 if (appointmentsResponse.ok) {
-                    appointments = await appointmentsResponse.json();
+                    const appointmentsData = await appointmentsResponse.json();
+                    appointments = Array.isArray(appointmentsData) ? appointmentsData : (appointmentsData.data || []);
+                    console.log('Записи загружены в loadDataFromServer:', appointments.length);
+                    console.log('Первая запись:', appointments[0]);
+                }
+
+                // Загружаем услуги
+                const servicesResponse = await fetch('/api/services');
+                if (servicesResponse.ok) {
+                    const servicesData = await servicesResponse.json();
+                    services = Array.isArray(servicesData) ? servicesData : (servicesData.data || []);
                 }
 
                 // Обновляем интерфейс
+                loadPatientsOptions();
+                await loadServicesOptions();
                 loadAppointments();
                 
             } catch (error) {
@@ -614,11 +652,13 @@
         }
 
         // Глобальные функции для кнопок
-        window.openAddAppointmentModal = function() {
+        window.openAddAppointmentModal = async function() {
             console.log('Открываем модальное окно добавления записи');
             currentEditingId = null;
             document.getElementById('modalTitle').textContent = 'Записать на приём';
             document.getElementById('appointmentForm').reset();
+            loadPatientsOptions();
+            await loadServicesOptions();
             document.getElementById('appointmentModal').style.display = 'block';
         };
 
@@ -631,11 +671,13 @@
 
             currentEditingId = id;
             document.getElementById('modalTitle').textContent = 'Редактировать запись';
-            document.getElementById('appointmentPatient').value = appointment.patientId;
+            document.getElementById('appointmentPatient').value = appointment.patient_id;
             document.getElementById('appointmentDate').value = appointment.date;
             document.getElementById('appointmentTime').value = appointment.time;
             document.getElementById('appointmentService').value = appointment.service;
             document.getElementById('appointmentDoctor').value = appointment.doctor;
+            document.getElementById('appointmentPrice').value = appointment.price || '';
+            document.getElementById('appointmentDuration').value = appointment.duration || '';
             document.getElementById('appointmentNotes').value = appointment.notes;
             document.getElementById('appointmentModal').style.display = 'block';
         };
@@ -645,15 +687,32 @@
             const appointment = appointments.find(a => a.id === id);
             if (!appointment) return;
 
-            alert(`Запись #${appointment.id}\nПациент: ${appointment.patientName}\nДата: ${formatDateTime(appointment.date, appointment.time)}\nУслуга: ${getServiceName(appointment.service)}\nВрач: ${appointment.doctor}\nСтатус: ${getStatusText(appointment.status)}\nСтоимость: ${appointment.cost.toLocaleString()} ₸\nПримечания: ${appointment.notes}`);
+            alert(`Запись #${appointment.id}\nПациент: ${appointment.patientName}\nДата: ${formatDateTime(appointment.date, appointment.time)}\nУслуга: ${getServiceName(appointment.service)}\nВрач: ${appointment.doctor}\nСтатус: ${getStatusText(appointment.status)}\nСтоимость: ${(appointment.price || 0).toLocaleString()} ₸\nПримечания: ${appointment.notes}`);
         };
 
-        window.completeAppointment = function(id) {
+        window.completeAppointment = async function(id) {
             console.log('Завершаем запись с ID:', id);
-            const appointment = appointments.find(a => a.id === id);
-            if (appointment) {
-                appointment.status = 'completed';
-                loadAppointments();
+            try {
+                const appointment = appointments.find(a => a.id === id);
+                if (!appointment) return;
+
+                const response = await fetch(`/api/appointments/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({...appointment, status: 'completed'})
+                });
+
+                if (!response.ok) throw new Error('Ошибка завершения записи');
+                
+                const result = await response.json();
+                showNotification(result.message, 'success');
+                
+                // Перезагружаем данные с сервера
+                await loadDataFromServer();
+                
+            } catch (error) {
+                console.error('Ошибка завершения записи:', error);
+                showNotification('Ошибка завершения записи', 'error');
             }
         };
 
@@ -684,14 +743,7 @@
             loadAppointments();
         };
 
-        // Загружаем данные при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, инициализируем страницу записей');
-            loadDataFromServer();
-            loadPatientsOptions();
-            loadServicesOptions();
-            setupForm();
-        });
+        // Загружаем данные при загрузке страницы (удалено - дублируется ниже)
 
         function loadPatientsOptions() {
             const select = document.getElementById('appointmentPatient');
@@ -704,21 +756,44 @@
             });
         }
 
-        function loadServicesOptions() {
+        async function loadServicesOptions() {
+            console.log('loadServicesOptions вызвана');
             const select = document.getElementById('appointmentService');
+            if (!select) {
+                console.error('appointmentService select не найден');
+                return;
+            }
             select.innerHTML = '<option value="">Выберите услугу</option>';
-            services.forEach(service => {
-                const option = document.createElement('option');
-                option.value = service.id;
-                option.textContent = `${service.name} (${service.price} ₸)`;
-                select.appendChild(option);
-            });
+            
+            try {
+                console.log('Загружаем услуги с сервера...');
+                const servicesResponse = await fetch('/api/services');
+                if (servicesResponse.ok) {
+                    const servicesData = await servicesResponse.json();
+                    const servicesList = Array.isArray(servicesData) ? servicesData : (servicesData.data || []);
+                    console.log('Услуги загружены с сервера:', servicesList.length);
+                    
+                    servicesList.forEach(service => {
+                        const option = document.createElement('option');
+                        option.value = service.name;
+                        option.textContent = service.name;
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.error('Ошибка ответа сервера:', servicesResponse.status);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки услуг:', error);
+            }
         }
 
         function loadAppointments() {
+            console.log('loadAppointments вызвана, currentView:', currentView);
             if (currentView === 'calendar') {
+                console.log('Обновляем календарь...');
                 generateWeeklyCalendar();
             } else {
+                console.log('Обновляем таблицу...');
                 loadAppointmentsTable();
             }
         }
@@ -731,12 +806,12 @@
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td>${appointment.id}</td>
-                    <td>${appointment.patientName}</td>
+                    <td>${appointment.patient_name || appointment.patientName || 'Неизвестно'}</td>
                     <td>${formatDateTime(appointment.date, appointment.time)}</td>
                     <td>${getServiceName(appointment.service)}</td>
                     <td>${appointment.doctor}</td>
                     <td><span class="status-${appointment.status}">${getStatusText(appointment.status)}</span></td>
-                    <td>${appointment.cost.toLocaleString()} ₸</td>
+                    <td>${(appointment.price || 0).toLocaleString()} ₸</td>
                     <td>
                         <div class="action-buttons">
                             ${appointment.status === 'scheduled' ? `<button class="btn btn-complete" onclick="completeAppointment(${appointment.id})">✓</button>` : ''}
@@ -748,8 +823,39 @@
             });
         }
 
+        function getDoctorColor(doctorName) {
+            if (!doctorName) return '#6c757d'; // Серый по умолчанию
+            
+            // Создаем хэш из имени врача для стабильного цвета
+            let hash = 0;
+            for (let i = 0; i < doctorName.length; i++) {
+                hash = doctorName.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            
+            // Массив красивых цветов для врачей
+            const colors = [
+                '#007bff', // Синий
+                '#28a745', // Зеленый
+                '#ffc107', // Желтый
+                '#dc3545', // Красный
+                '#17a2b8', // Голубой
+                '#6f42c1', // Фиолетовый
+                '#fd7e14', // Оранжевый
+                '#20c997', // Бирюзовый
+                '#e83e8c', // Розовый
+                '#6c757d'  // Серый
+            ];
+            
+            return colors[Math.abs(hash) % colors.length];
+        }
+
         function generateWeeklyCalendar() {
+            console.log('generateWeeklyCalendar вызвана');
             const container = document.getElementById('weeklyCalendarContainer');
+            if (!container) {
+                console.error('weeklyCalendarContainer не найден');
+                return;
+            }
             const today = new Date();
             
             // Получаем начало и конец текущей недели
@@ -771,6 +877,7 @@
                     timeSlots.push(`${hour.toString().padStart(2, '0')}:30`);
                 }
             }
+            console.log('Создано временных слотов:', timeSlots.length);
             
             // Создаем заголовки дней недели
             const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -800,7 +907,9 @@
             }
             
             // Создаем ячейки времени
-            timeSlots.forEach(timeSlot => {
+            console.log('Начинаем создание ячеек времени...');
+            timeSlots.forEach((timeSlot, index) => {
+                console.log(`Создаем ячейку ${index + 1}/${timeSlots.length} для времени ${timeSlot}`);
                 // Добавляем ячейку времени
                 const timeCell = document.createElement('div');
                 timeCell.className = 'time-slot';
@@ -826,7 +935,8 @@
                         cell.classList.add('occupied');
                         const popup = document.createElement('div');
                         popup.className = 'appointment-popup';
-                        popup.textContent = `${appointment.patientName} (${appointment.doctor})`;
+                        popup.textContent = `${appointment.patient_name || appointment.patientName || 'Неизвестно'} (${appointment.doctor})`;
+                        popup.style.backgroundColor = getDoctorColor(appointment.doctor);
                         popup.onclick = () => viewAppointment(appointment.id);
                         cell.appendChild(popup);
                     } else {
@@ -858,7 +968,16 @@
         
         function getAppointmentForTimeSlot(date, timeSlot) {
             const dateStr = formatDateForAppointment(date);
-            return appointments.find(apt => apt.date === dateStr && apt.time === timeSlot);
+            console.log(`Ищем запись для даты: ${dateStr}, времени: ${timeSlot}`);
+            console.log('Доступные записи:', appointments.map(apt => ({date: apt.date, time: apt.time, patient: apt.patient_name})));
+            
+            // Ищем запись, учитывая что API может возвращать дату в разных форматах
+            const found = appointments.find(apt => {
+                const aptDate = apt.date.split('T')[0]; // Извлекаем только дату из ISO строки
+                return aptDate === dateStr && apt.time === timeSlot;
+            });
+            console.log('Найдена запись:', found);
+            return found;
         }
         
         function formatDateForAppointment(date) {
@@ -870,13 +989,17 @@
             generateWeeklyCalendar();
         }
         
-        function openAddAppointmentForSlot(date, timeSlot) {
+        async function openAddAppointmentForSlot(date, timeSlot) {
             currentEditingId = null;
             document.getElementById('appointmentForm').reset();
             
             // Устанавливаем дату и время
             document.getElementById('appointmentDate').value = formatDateForAppointment(date);
             document.getElementById('appointmentTime').value = timeSlot;
+            
+            // Загружаем опции
+            loadPatientsOptions();
+            await loadServicesOptions();
             
             // Проверяем доступность времени
             updateTimeAvailability(date);
@@ -958,11 +1081,13 @@
 
             currentEditingId = id;
             document.getElementById('modalTitle').textContent = 'Редактировать запись';
-            document.getElementById('appointmentPatient').value = appointment.patientId;
+            document.getElementById('appointmentPatient').value = appointment.patient_id;
             document.getElementById('appointmentDate').value = appointment.date;
             document.getElementById('appointmentTime').value = appointment.time;
             document.getElementById('appointmentService').value = appointment.service;
             document.getElementById('appointmentDoctor').value = appointment.doctor;
+            document.getElementById('appointmentPrice').value = appointment.price || '';
+            document.getElementById('appointmentDuration').value = appointment.duration || '';
             document.getElementById('appointmentNotes').value = appointment.notes;
             document.getElementById('appointmentModal').style.display = 'block';
         }
@@ -971,16 +1096,18 @@
             const appointment = appointments.find(a => a.id === id);
             if (!appointment) return;
 
-            alert(`Запись #${appointment.id}\nПациент: ${appointment.patientName}\nДата: ${formatDateTime(appointment.date, appointment.time)}\nУслуга: ${getServiceName(appointment.service)}\nВрач: ${appointment.doctor}\nСтатус: ${getStatusText(appointment.status)}\nСтоимость: ${appointment.cost.toLocaleString()} ₸\nПримечания: ${appointment.notes}`);
-        }
-
-        function completeAppointment(id) {
-            const appointment = appointments.find(a => a.id === id);
-            if (appointment) {
-                appointment.status = 'completed';
-                loadAppointments();
+            let message = `Запись #${appointment.id}\nПациент: ${appointment.patientName}\nДата: ${formatDateTime(appointment.date, appointment.time)}\nУслуга: ${getServiceName(appointment.service)}\nВрач: ${appointment.doctor}\nСтатус: ${getStatusText(appointment.status)}\nСтоимость: ${(appointment.price || 0).toLocaleString()} ₸\nПримечания: ${appointment.notes}`;
+            
+            if (appointment.status === 'scheduled') {
+                message += '\n\nНажмите OK, чтобы завершить запись';
+                if (confirm(message)) {
+                    completeAppointment(id);
+                }
+            } else {
+                alert(message);
             }
         }
+
 
         async function deleteAppointment(id) {
             if (confirm('Вы уверены, что хотите удалить эту запись?')) {
@@ -1011,27 +1138,22 @@
         }
 
         window.saveAppointment = async function() {
+            const priceValue = document.getElementById('appointmentPrice').value;
+            const durationValue = document.getElementById('appointmentDuration').value;
+            
             const formData = {
                 patient_id: parseInt(document.getElementById('appointmentPatient').value),
                 date: document.getElementById('appointmentDate').value,
                 time: document.getElementById('appointmentTime').value,
                 service: document.getElementById('appointmentService').value,
                 doctor: document.getElementById('appointmentDoctor').value,
+                price: priceValue ? parseFloat(priceValue) : 0,
+                duration: durationValue ? parseInt(durationValue) : 0,
                 notes: document.getElementById('appointmentNotes').value
             };
 
-            const patient = patients.find(p => p.id === formData.patient_id);
-            const service = services.find(s => s.id === formData.service);
-
-            if (!patient || !service) {
-                showNotification('Ошибка: не найдены данные пациента или услуги', 'error');
-                return;
-            }
-
             const appointmentData = {
                 ...formData,
-                patient_name: patient.name,
-                cost: service.price,
                 status: currentEditingId ? appointments.find(a => a.id === currentEditingId)?.status || 'scheduled' : 'scheduled'
             };
 
@@ -1166,6 +1288,41 @@
                 closeAppointmentModal();
             }
         }
+
+        function loadPatientsOptions() {
+            const select = document.getElementById('appointmentPatient');
+            select.innerHTML = '<option value="">Выберите пациента</option>';
+            patients.forEach(patient => {
+                const option = document.createElement('option');
+                option.value = patient.id;
+                option.textContent = patient.name;
+                select.appendChild(option);
+            });
+        }
+
+
+        // Проверка авторизации
+        function checkAuth() {
+            const userRole = localStorage.getItem('userRole');
+            if (!userRole) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('DOM загружен, проверяем авторизацию...');
+            
+            if (!checkAuth()) {
+                return;
+            }
+            
+            console.log('Авторизация успешна, инициализируем страницу записей');
+            await loadDataFromServer();
+            setupForm();
+        });
     </script>
 </body>
 </html>

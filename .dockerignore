@@ -45,5 +45,3 @@ Makefile
 
 # Go specific
 vendor/
-*.mod
-*.sum

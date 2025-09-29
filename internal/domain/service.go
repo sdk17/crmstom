@@ -2,17 +2,14 @@ package domain
 
 import "time"
 
-// Service представляет услугу в доменной модели
+// Service представляет услугу в доменной модели (упрощенная схема)
 type Service struct {
-	ID          int       `json:"id"`
-	Name        string    `json:"name"`
-	Category    string    `json:"category"`
-	Description string    `json:"description"`
-	Price       int       `json:"price"`
-	Duration    int       `json:"duration"` // в минутах
-	Notes       string    `json:"notes"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Type      string    `json:"type"`
+	Notes     string    `json:"notes"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // ServiceRepository определяет интерфейс для работы с услугами

@@ -541,7 +541,7 @@
         <div class="nav">
             <a href="/">🏠 Главная</a>
             <a href="/patients-appointments.html">👥 Пациенты и Записи</a>
-            <a href="/services.html">🦷 Услуги</a>
+            <a href="/services.html">⚙️ Настройки</a>
             <a href="/reports.html">📊 Отчёты</a>
         </div>
         
@@ -723,6 +723,14 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label for="appointmentPrice">Цена (₸) *</label>
+                    <input type="text" id="appointmentPrice" name="price" placeholder="Введите цену" required>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentDuration">Длительность (минуты) *</label>
+                    <input type="text" id="appointmentDuration" name="duration" placeholder="Введите длительность" required>
+                </div>
+                <div class="form-group">
                     <label for="appointmentNotes">Примечания</label>
                     <textarea id="appointmentNotes" name="notes"></textarea>
                 </div>
@@ -760,7 +768,8 @@
                 // Загружаем пациентов
                 const patientsResponse = await fetch('/api/patients');
                 if (patientsResponse.ok) {
-                    patients = await patientsResponse.json();
+                    const patientsData = await patientsResponse.json();
+                    patients = Array.isArray(patientsData) ? patientsData : (patientsData.data || []);
                     console.log('Пациенты загружены:', patients.length);
                     displayPatients();
                 }
@@ -768,7 +777,8 @@
                 // Загружаем записи
                 const appointmentsResponse = await fetch('/api/appointments');
                 if (appointmentsResponse.ok) {
-                    appointments = await appointmentsResponse.json();
+                    const appointmentsData = await appointmentsResponse.json();
+                    appointments = Array.isArray(appointmentsData) ? appointmentsData : (appointmentsData.data || []);
                     console.log('Записи загружены:', appointments.length);
                     displayAppointments();
                 }
@@ -776,7 +786,8 @@
                 // Загружаем услуги
                 const servicesResponse = await fetch('/api/services');
                 if (servicesResponse.ok) {
-                    services = await servicesResponse.json();
+                    const servicesData = await servicesResponse.json();
+                    services = Array.isArray(servicesData) ? servicesData : (servicesData.data || []);
                     console.log('Услуги загружены:', services.length);
                     loadServicesOptions();
                 }
@@ -878,6 +889,12 @@
             const tbody = document.getElementById('appointmentsTableBody');
             tbody.innerHTML = '';
 
+            // Проверяем, что appointmentsToShow является массивом
+            if (!Array.isArray(appointmentsToShow)) {
+                console.error('appointmentsToShow не является массивом:', appointmentsToShow);
+                appointmentsToShow = [];
+            }
+
             appointmentsToShow.forEach(appointment => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -887,7 +904,7 @@
                     <td>${getServiceName(appointment.service)}</td>
                     <td>${appointment.doctor}</td>
                     <td><span class="status-badge status-${appointment.status}">${getStatusText(appointment.status)}</span></td>
-                    <td>${appointment.cost.toLocaleString()} ₸</td>
+                    <td>${(appointment.price || appointment.cost || 0).toLocaleString()} ₸</td>
                     <td>
                         <div class="action-buttons">
                             <button class="btn-small btn-edit" onclick="editAppointment(${appointment.id})">✏️</button>
@@ -1033,28 +1050,27 @@
             
             services.forEach(service => {
                 const option = document.createElement('option');
-                option.value = service.category;
+                option.value = service.name;
                 option.textContent = service.name;
-                option.setAttribute('data-price', service.price);
                 select.appendChild(option);
             });
         }
 
         // Сохранение записи
         async function saveAppointment() {
+            const priceValue = document.getElementById('appointmentPrice').value;
+            const durationValue = document.getElementById('appointmentDuration').value;
+            
             const formData = {
                 patient_id: parseInt(document.getElementById('appointmentPatient').value),
                 date: document.getElementById('appointmentDate').value,
                 time: document.getElementById('appointmentTime').value,
                 service: document.getElementById('appointmentService').value,
                 doctor: document.getElementById('appointmentDoctor').value,
+                price: priceValue ? parseFloat(priceValue) : 0,
+                duration: durationValue ? parseInt(durationValue) : 0,
                 notes: document.getElementById('appointmentNotes').value
             };
-
-            // Получаем стоимость услуги
-            const serviceSelect = document.getElementById('appointmentService');
-            const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-            const cost = selectedOption ? parseInt(selectedOption.getAttribute('data-price')) || 0 : 0;
 
             // Получаем имя пациента
             const patient = patients.find(p => p.id === formData.patient_id);
@@ -1066,7 +1082,7 @@
                     const response = await fetch(`/api/appointments/${currentEditingId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({...formData, cost})
+                        body: JSON.stringify({...formData})
                     });
 
                     if (!response.ok) throw new Error('Ошибка обновления записи');
@@ -1078,7 +1094,7 @@
                     const response = await fetch('/api/appointments', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({...formData, cost, status: 'scheduled'})
+                        body: JSON.stringify({...formData, status: 'scheduled'})
                     });
 
                     if (!response.ok) throw new Error('Ошибка добавления записи');
@@ -1110,6 +1126,8 @@
             document.getElementById('appointmentTime').value = appointment.time;
             document.getElementById('appointmentService').value = appointment.service;
             document.getElementById('appointmentDoctor').value = appointment.doctor;
+            document.getElementById('appointmentPrice').value = appointment.price || '';
+            document.getElementById('appointmentDuration').value = appointment.duration || '';
             document.getElementById('appointmentNotes').value = appointment.notes || '';
             
             loadPatientsOptions();
@@ -1251,9 +1269,14 @@
             return date.toLocaleDateString('ru-RU');
         }
 
-        function getServiceName(category) {
-            const service = services.find(s => s.category === category);
-            return service ? service.name : category;
+        function getServiceName(serviceName) {
+            // Если serviceName уже является именем услуги, возвращаем его
+            if (typeof serviceName === 'string' && serviceName.length > 0) {
+                return serviceName;
+            }
+            // Иначе ищем по имени или типу
+            const service = services.find(s => s.name === serviceName || s.type === serviceName);
+            return service ? service.name : (serviceName || 'Неизвестно');
         }
 
         function getStatusText(status) {

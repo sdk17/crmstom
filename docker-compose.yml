@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # PostgreSQL база данных
+  postgres:
+    image: postgres:15-alpine
+    container_name: crmstom_postgres
+    environment:
+      POSTGRES_DB: crmstom
+      POSTGRES_USER: crmstom_user
+      POSTGRES_PASSWORD: crmstom_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - crmstom_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crmstom_user -d crmstom"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # CRM приложение
+  app:
+    build: .
+    container_name: crmstom_app
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=crmstom
+      - DB_USER=crmstom_user
+      - DB_PASSWORD=crmstom_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - crmstom_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  crmstom_network:
+    driver: bridge

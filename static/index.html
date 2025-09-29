@@ -118,20 +118,16 @@
         <!-- Статистика -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number" id="totalPatients">3</div>
-                <div class="stat-label">Пациентов</div>
+                <div class="stat-number" id="todayAppointments">0</div>
+                <div class="stat-label">Записей на сегодня</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="todayAppointments">2</div>
-                <div class="stat-label">Записей сегодня</div>
+                <div class="stat-number" id="todayIncome">0</div>
+                <div class="stat-label">Доход на сегодня (₸)</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="totalServices">8</div>
-                <div class="stat-label">Услуг</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="monthlyIncome">161,000</div>
-                <div class="stat-label">Доход за месяц (₸)</div>
+                <div class="stat-number" id="totalPatients">0</div>
+                <div class="stat-label">Итого пациентов</div>
             </div>
         </div>
 
@@ -142,20 +138,10 @@
                 <div class="quick-action-title">Пациенты и Записи</div>
                 <div class="quick-action-desc">Объединенная страница для работы с пациентами и записями</div>
             </a>
-            <a href="/patients.html" class="quick-action-card">
-                <span class="quick-action-icon">👥</span>
-                <div class="quick-action-title">Только Пациенты</div>
-                <div class="quick-action-desc">Управление базой пациентов, добавление новых записей</div>
-            </a>
-            <a href="/appointments.html" class="quick-action-card">
-                <span class="quick-action-icon">📅</span>
-                <div class="quick-action-title">Только Записи</div>
-                <div class="quick-action-desc">Календарь записей, планирование приёмов</div>
-            </a>
             <a href="/services.html" class="quick-action-card">
-                <span class="quick-action-icon">🦷</span>
-                <div class="quick-action-title">Услуги и цены</div>
-                <div class="quick-action-desc">Прайс-лист, управление услугами клиники</div>
+                <span class="quick-action-icon">⚙️</span>
+                <div class="quick-action-title">Настройки</div>
+                <div class="quick-action-desc">Управление услугами, врачами и настройками системы</div>
             </a>
             <a href="/reports.html" class="quick-action-card">
                 <span class="quick-action-icon">📊</span>
@@ -167,14 +153,55 @@
         <!-- Традиционная навигация -->
         <div class="nav">
             <a href="/patients-appointments.html">👥📅 Пациенты и Записи</a>
-            <a href="/services.html">🦷 Услуги</a>
+            <a href="/services.html">⚙️ Настройки</a>
             <a href="/reports.html">📊 Отчёты</a>
         </div>
     </div>
 
     <script>
+        // Проверка авторизации
+        function checkAuth() {
+            const userRole = localStorage.getItem('userRole');
+            if (!userRole) {
+                window.location.href = '/login.html';
+                return false;
+            }
+            return true;
+        }
+
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('Загружаем статистику дашборда...');
+            console.log('DOM загружен, проверяем авторизацию...');
+            
+            if (!checkAuth()) {
+                return;
+            }
+            
+            // Показываем информацию о пользователе
+            const userDisplayName = localStorage.getItem('userDisplayName');
+            const userRole = localStorage.getItem('userRole');
+            
+            // Добавляем информацию о пользователе в заголовок
+            const header = document.querySelector('h1');
+            if (header) {
+                header.innerHTML = `🦷 CRM Стоматология <span style="font-size: 16px; color: #666;">(${userDisplayName} - ${userRole === 'admin' ? 'Администратор' : 'Врач'})</span>`;
+            }
+            
+            // Добавляем кнопку выхода
+            const nav = document.querySelector('.nav');
+            if (nav) {
+                const logoutBtn = document.createElement('a');
+                logoutBtn.href = '#';
+                logoutBtn.textContent = '🚪 Выйти';
+                logoutBtn.style.backgroundColor = '#dc3545';
+                logoutBtn.onclick = function(e) {
+                    e.preventDefault();
+                    localStorage.clear();
+                    window.location.href = '/login.html';
+                };
+                nav.appendChild(logoutBtn);
+            }
+            
+            console.log('Авторизация успешна, загружаем статистику дашборда...');
             try {
                 const response = await fetch('/api/dashboard');
                 if (!response.ok) throw new Error('Ошибка загрузки статистики');
@@ -183,10 +210,9 @@
                 console.log('Статистика загружена:', stats);
                 
                 // Обновляем статистику на странице
-                document.getElementById('totalPatients').textContent = stats.total_patients;
-                document.getElementById('todayAppointments').textContent = stats.today_appointments;
-                document.getElementById('totalServices').textContent = '8'; // Пока статично
-                document.getElementById('monthlyIncome').textContent = stats.total_revenue.toLocaleString();
+                document.getElementById('todayAppointments').textContent = stats.today_appointments || 0;
+                document.getElementById('todayIncome').textContent = (stats.today_revenue || 0).toLocaleString();
+                document.getElementById('totalPatients').textContent = stats.total_patients || 0;
                 
             } catch (error) {
                 console.error('Ошибка загрузки статистики:', error);

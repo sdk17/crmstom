@@ -2,12 +2,9 @@ package domain
 
 // DashboardStats представляет статистику дашборда
 type DashboardStats struct {
-	TotalPatients         int     `json:"total_patients"`
-	TotalAppointments     int     `json:"total_appointments"`
-	CompletedAppointments int     `json:"completed_appointments"`
-	TotalRevenue          float64 `json:"total_revenue"`
-	TodayAppointments     int     `json:"today_appointments"`
-	PendingAppointments   int     `json:"pending_appointments"`
+	TodayAppointments int     `json:"today_appointments"`
+	TodayRevenue      float64 `json:"today_revenue"`
+	TotalPatients     int     `json:"total_patients"`
 }
 
 // FinanceReport представляет финансовый отчет

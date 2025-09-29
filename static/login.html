@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в систему - CRM Стоматология</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 28px;
+        }
+        .login-header p {
+            color: #666;
+            margin: 10px 0 0 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .demo-credentials {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .demo-credentials h4 {
+            margin: 0 0 10px 0;
+        }
+        .demo-credentials p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🦷 CRM Стоматология</h1>
+            <p>Войдите в систему</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Логин</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="login-btn" id="loginBtn">Войти</button>
+        </form>
+
+        <div class="demo-credentials">
+            <h4>Демо-доступы:</h4>
+            <p><strong>Администратор:</strong> admin / admin</p>
+            <p><strong>Врач:</strong> dr_ivanov / (без пароля)</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Показываем индикатор загрузки
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Вход...';
+            errorMessage.style.display = 'none';
+            
+            try {
+                // Простая проверка логина/пароля
+                if (username === 'admin' && password === 'admin') {
+                    // Администратор
+                    localStorage.setItem('userRole', 'admin');
+                    localStorage.setItem('username', 'admin');
+                    localStorage.setItem('userDisplayName', 'Администратор');
+                    window.location.href = '/';
+                } else {
+                    // Проверяем среди врачей из localStorage
+                    const stored = localStorage.getItem('doctors');
+                    const docs = stored ? JSON.parse(stored) : [];
+                    const found = docs.find(d => d.login === username);
+                    if (found && (found.password === password || (!found.password && password === ''))) {
+                        localStorage.setItem('userRole', 'doctor');
+                        localStorage.setItem('username', found.login || found.name);
+                        localStorage.setItem('userDisplayName', found.name);
+                        window.location.href = '/';
+                    } else {
+                        throw new Error('Неверный логин или пароль');
+                    }
+                }
+            } catch (error) {
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Войти';
+            }
+        });
+
+        // Проверяем, если пользователь уже авторизован
+        if (localStorage.getItem('userRole')) {
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>

@@ -23,7 +23,8 @@ type Appointment struct {
 	Service     string            `json:"service"`
 	Doctor      string            `json:"doctor"`
 	Status      AppointmentStatus `json:"status"`
-	Cost        int               `json:"cost"`
+	Price       float64           `json:"price"`
+	Duration    int               `json:"duration"` // в минутах
 	Notes       string            `json:"notes"`
 	CreatedAt   time.Time         `json:"created_at"`
 	UpdatedAt   time.Time         `json:"updated_at"`
