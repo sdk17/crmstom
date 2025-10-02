@@ -357,6 +357,12 @@
                     <label for="doctorPassword">Пароль</label>
                     <input type="password" id="doctorPassword" placeholder="Пароль для входа">
                 </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="doctorIsAdmin" style="width: auto; cursor: pointer;">
+                        <span>Администратор (полный доступ к системе)</span>
+                    </label>
+                </div>
                 <div class="form-actions">
                     <button type="button" class="btn-cancel" onclick="closeDoctorModal()">Отмена</button>
                     <button type="submit" class="btn-save">Сохранить</button>
@@ -496,6 +502,7 @@
             document.getElementById('doctorEmail').value = doctor.email || '';
             document.getElementById('doctorLogin').value = doctor.login || '';
             document.getElementById('doctorPassword').value = '';
+            document.getElementById('doctorIsAdmin').checked = doctor.isAdmin || false;
             document.getElementById('doctorModal').style.display = 'block';
         };
 
@@ -633,9 +640,10 @@
             doctors.forEach(doctor => {
                 const card = document.createElement('div');
                 card.className = 'service-card';
+                const adminBadge = doctor.isAdmin ? '<span style="display: inline-block; background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 10px;">👑 Администратор</span>' : '';
                 card.innerHTML = `
                     <div class="service-category">Врач</div>
-                    <div class="service-name">${doctor.name}</div>
+                    <div class="service-name">${doctor.name}${adminBadge}</div>
                     <div class="service-description">${doctor.email || 'Email не указан'}</div>
                     <div class="service-actions">
                         <button class="btn btn-edit" onclick="editDoctor(${doctor.id})">✏️</button>
@@ -651,7 +659,8 @@
                 name: document.getElementById('doctorName').value,
                 email: document.getElementById('doctorEmail').value,
                 login: document.getElementById('doctorLogin').value,
-                password: document.getElementById('doctorPassword').value
+                password: document.getElementById('doctorPassword').value,
+                isAdmin: document.getElementById('doctorIsAdmin').checked
             };
 
             try {

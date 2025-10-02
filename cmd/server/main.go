@@ -16,6 +16,7 @@ func main() {
 	var patientRepo infrastructure.PatientRepository
 	var appointmentRepo infrastructure.AppointmentRepository
 	var serviceRepo infrastructure.ServiceRepository
+	var doctorRepo *infrastructure.PostgresDoctorRepository
 
 	// Проверяем, есть ли переменная окружения для базы данных
 	if os.Getenv("DB_HOST") != "" {
@@ -32,12 +33,14 @@ func main() {
 		patientRepo = infrastructure.NewPostgresPatientRepository(db)
 		appointmentRepo = infrastructure.NewPostgresAppointmentRepository(db)
 		serviceRepo = infrastructure.NewPostgresServiceRepository(db)
+		doctorRepo = infrastructure.NewPostgresDoctorRepository(db)
 	} else {
 		// Используем память (для разработки)
 		fmt.Println("💾 Использование in-memory хранилища...")
 		patientRepo = infrastructure.NewMemoryPatientRepository()
 		appointmentRepo = infrastructure.NewMemoryAppointmentRepository()
 		serviceRepo = infrastructure.NewMemoryServiceRepository()
+		log.Fatal("⚠️ Doctor repository requires PostgreSQL database. Please set DB_HOST environment variable.")
 	}
 
 	// Инициализация use cases
@@ -45,9 +48,10 @@ func main() {
 	appointmentUseCase := usecase.NewAppointmentUseCase(appointmentRepo, patientRepo, serviceRepo)
 	serviceUseCase := usecase.NewServiceUseCase(serviceRepo)
 	dashboardUseCase := usecase.NewDashboardUseCase(patientRepo, appointmentRepo, serviceRepo)
+	doctorUseCase := usecase.NewDoctorUseCase(doctorRepo)
 
 	// Инициализация HTTP handlers
-	handler := httphandler.NewHandler(patientUseCase, appointmentUseCase, serviceUseCase, dashboardUseCase)
+	handler := httphandler.NewHandler(patientUseCase, appointmentUseCase, serviceUseCase, dashboardUseCase, doctorUseCase)
 
 	// Настройка маршрутов
 	mux := http.NewServeMux()
