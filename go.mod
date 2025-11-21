@@ -1,4 +1,4 @@
-module github.com/sdk17/crmstom
+module github.com/sdk17/crm_ar
 
 go 1.21
 

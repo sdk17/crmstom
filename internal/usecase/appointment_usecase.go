@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/sdk17/crmstom/internal/domain"
+	"github.com/sdk17/crm_ar/internal/domain"
 )
 
 // AppointmentUseCase реализует бизнес-логику для записей

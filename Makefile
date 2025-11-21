@@ -3,7 +3,7 @@
 .PHONY: build run test clean deps lint fmt
 
 # Переменные
-BINARY_NAME=crmstom
+BINARY_NAME=crm_ar
 BUILD_DIR=build
 MAIN_PATH=cmd/server/main.go
 
@@ -76,12 +76,12 @@ update:
 # Создание docker образа
 docker-build:
 	@echo "🐳 Создание Docker образа..."
-	@docker build -t crmstom:latest .
+	@docker build -t crm_ar:latest .
 
 # Запуск в Docker
 docker-run:
 	@echo "🐳 Запуск в Docker..."
-	@docker run -p 8080:8080 crmstom:latest
+	@docker run -p 8080:8080 crm_ar:latest
 
 # Помощь
 help:
