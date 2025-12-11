@@ -1,4 +1,4 @@
-package infrastructure
+package repository
 
 import (
 	"database/sql"
@@ -8,15 +8,15 @@ import (
 	"github.com/sdk17/crmstom/internal/domain"
 )
 
-type PostgresPatientRepository struct {
+type PatientRepository struct {
 	db *sql.DB
 }
 
-func NewPostgresPatientRepository(db *sql.DB) *PostgresPatientRepository {
-	return &PostgresPatientRepository{db: db}
+func NewPatientRepository(db *sql.DB) *PatientRepository {
+	return &PatientRepository{db: db}
 }
 
-func (r *PostgresPatientRepository) Create(patient *domain.Patient) error {
+func (r *PatientRepository) Create(patient *domain.Patient) error {
 	query := `INSERT INTO patients (name, phone, email, birth_date, address) 
 			  VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at, updated_at`
 
@@ -26,7 +26,7 @@ func (r *PostgresPatientRepository) Create(patient *domain.Patient) error {
 	return err
 }
 
-func (r *PostgresPatientRepository) GetByID(id int) (*domain.Patient, error) {
+func (r *PatientRepository) GetByID(id int) (*domain.Patient, error) {
 	query := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at 
 			  FROM patients WHERE id = $1`
 
@@ -46,7 +46,7 @@ func (r *PostgresPatientRepository) GetByID(id int) (*domain.Patient, error) {
 	return patient, nil
 }
 
-func (r *PostgresPatientRepository) GetAll() ([]*domain.Patient, error) {
+func (r *PatientRepository) GetAll() ([]*domain.Patient, error) {
 	query := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at 
 			  FROM patients ORDER BY created_at DESC`
 
@@ -72,7 +72,7 @@ func (r *PostgresPatientRepository) GetAll() ([]*domain.Patient, error) {
 	return patients, nil
 }
 
-func (r *PostgresPatientRepository) Update(patient *domain.Patient) error {
+func (r *PatientRepository) Update(patient *domain.Patient) error {
 	query := `UPDATE patients SET name = $1, phone = $2, email = $3, birth_date = $4, 
 			  address = $5, updated_at = CURRENT_TIMESTAMP 
 			  WHERE id = $6`
@@ -95,7 +95,7 @@ func (r *PostgresPatientRepository) Update(patient *domain.Patient) error {
 	return nil
 }
 
-func (r *PostgresPatientRepository) Delete(id int) error {
+func (r *PatientRepository) Delete(id int) error {
 	query := `DELETE FROM patients WHERE id = $1`
 
 	result, err := r.db.Exec(query, id)
@@ -115,7 +115,7 @@ func (r *PostgresPatientRepository) Delete(id int) error {
 	return nil
 }
 
-func (r *PostgresPatientRepository) GetByPhone(phone string) (*domain.Patient, error) {
+func (r *PatientRepository) GetByPhone(phone string) (*domain.Patient, error) {
 	query := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at 
 			  FROM patients WHERE phone = $1`
 
@@ -135,7 +135,7 @@ func (r *PostgresPatientRepository) GetByPhone(phone string) (*domain.Patient, e
 	return patient, nil
 }
 
-func (r *PostgresPatientRepository) Search(query string) ([]*domain.Patient, error) {
+func (r *PatientRepository) Search(query string) ([]*domain.Patient, error) {
 	searchQuery := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at 
 					FROM patients WHERE name ILIKE $1 OR phone ILIKE $1 OR email ILIKE $1 
 					ORDER BY name`

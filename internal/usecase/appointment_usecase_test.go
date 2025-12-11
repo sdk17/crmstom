@@ -274,6 +274,27 @@ func TestAppointmentUseCase_UpdateAppointment(t *testing.T) {
 		errMsg      string
 	}{
 		{
+			name:        "nil appointment validation error",
+			appointment: nil,
+			setup: func(a *repository.MockAppointmentRepository, p *repository.MockPatientRepository, s *repository.MockServiceRepository) {
+			},
+			wantErr: true,
+			errMsg:  "appointment cannot be nil",
+		},
+		{
+			name: "validation error missing service",
+			appointment: &domain.Appointment{
+				ID:        1,
+				PatientID: 1,
+				Date:      futureDate,
+				Service:   "",
+			},
+			setup: func(a *repository.MockAppointmentRepository, p *repository.MockPatientRepository, s *repository.MockServiceRepository) {
+			},
+			wantErr: true,
+			errMsg:  "service is required",
+		},
+		{
 			name: "success",
 			appointment: &domain.Appointment{
 				ID:        1,

@@ -1,4 +1,4 @@
-package infrastructure
+package repository
 
 import (
 	"database/sql"
@@ -7,18 +7,16 @@ import (
 	"github.com/sdk17/crmstom/internal/domain"
 )
 
-// PostgresDoctorRepository реализует domain.DoctorRepository для PostgreSQL
-type PostgresDoctorRepository struct {
+type DoctorRepository struct {
 	db *sql.DB
 }
 
-// NewPostgresDoctorRepository создает новый экземпляр PostgresDoctorRepository
-func NewPostgresDoctorRepository(db *sql.DB) *PostgresDoctorRepository {
-	return &PostgresDoctorRepository{db: db}
+func NewDoctorRepository(db *sql.DB) *DoctorRepository {
+	return &DoctorRepository{db: db}
 }
 
 // Create создает нового врача
-func (r *PostgresDoctorRepository) Create(doctor *domain.Doctor) error {
+func (r *DoctorRepository) Create(doctor *domain.Doctor) error {
 	query := `
 		INSERT INTO doctors (name, email, login, password, is_admin, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -38,7 +36,7 @@ func (r *PostgresDoctorRepository) Create(doctor *domain.Doctor) error {
 }
 
 // GetByID получает врача по ID
-func (r *PostgresDoctorRepository) GetByID(id int) (*domain.Doctor, error) {
+func (r *DoctorRepository) GetByID(id int) (*domain.Doctor, error) {
 	query := `
 		SELECT id, name, email, login, password, is_admin, created_at, updated_at
 		FROM doctors
@@ -67,7 +65,7 @@ func (r *PostgresDoctorRepository) GetByID(id int) (*domain.Doctor, error) {
 }
 
 // GetAll получает всех врачей
-func (r *PostgresDoctorRepository) GetAll() ([]*domain.Doctor, error) {
+func (r *DoctorRepository) GetAll() ([]*domain.Doctor, error) {
 	query := `
 		SELECT id, name, email, login, password, is_admin, created_at, updated_at
 		FROM doctors
@@ -102,7 +100,7 @@ func (r *PostgresDoctorRepository) GetAll() ([]*domain.Doctor, error) {
 }
 
 // Update обновляет врача
-func (r *PostgresDoctorRepository) Update(doctor *domain.Doctor) error {
+func (r *DoctorRepository) Update(doctor *domain.Doctor) error {
 	query := `
 		UPDATE doctors
 		SET name = $1, email = $2, login = $3, password = $4, is_admin = $5, updated_at = $6
@@ -135,7 +133,7 @@ func (r *PostgresDoctorRepository) Update(doctor *domain.Doctor) error {
 }
 
 // Delete удаляет врача
-func (r *PostgresDoctorRepository) Delete(id int) error {
+func (r *DoctorRepository) Delete(id int) error {
 	query := `DELETE FROM doctors WHERE id = $1`
 
 	result, err := r.db.Exec(query, id)
@@ -156,7 +154,7 @@ func (r *PostgresDoctorRepository) Delete(id int) error {
 }
 
 // GetByLogin получает врача по логину
-func (r *PostgresDoctorRepository) GetByLogin(login string) (*domain.Doctor, error) {
+func (r *DoctorRepository) GetByLogin(login string) (*domain.Doctor, error) {
 	query := `
 		SELECT id, name, email, login, password, is_admin, created_at, updated_at
 		FROM doctors

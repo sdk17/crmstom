@@ -1,4 +1,4 @@
-package infrastructure
+package repository
 
 import (
 	"database/sql"
@@ -8,15 +8,15 @@ import (
 	"github.com/sdk17/crmstom/internal/domain"
 )
 
-type PostgresAppointmentRepository struct {
+type AppointmentRepository struct {
 	db *sql.DB
 }
 
-func NewPostgresAppointmentRepository(db *sql.DB) *PostgresAppointmentRepository {
-	return &PostgresAppointmentRepository{db: db}
+func NewAppointmentRepository(db *sql.DB) *AppointmentRepository {
+	return &AppointmentRepository{db: db}
 }
 
-func (r *PostgresAppointmentRepository) Create(appointment *domain.Appointment) error {
+func (r *AppointmentRepository) Create(appointment *domain.Appointment) error {
 	// Получаем service_id по названию услуги
 	var serviceID int
 	serviceQuery := `SELECT id FROM services WHERE name = $1 LIMIT 1`
@@ -38,7 +38,7 @@ func (r *PostgresAppointmentRepository) Create(appointment *domain.Appointment) 
 	return err
 }
 
-func (r *PostgresAppointmentRepository) GetByID(id int) (*domain.Appointment, error) {
+func (r *AppointmentRepository) GetByID(id int) (*domain.Appointment, error) {
 	query := `SELECT a.id, a.patient_id, a.service_id, a.appointment_date, a.status, a.price, a.duration_minutes, a.notes, a.created_at, a.updated_at,
 			  s.name as service_name
 			  FROM appointments a
@@ -70,7 +70,7 @@ func (r *PostgresAppointmentRepository) GetByID(id int) (*domain.Appointment, er
 	return appointment, nil
 }
 
-func (r *PostgresAppointmentRepository) GetAll() ([]*domain.Appointment, error) {
+func (r *AppointmentRepository) GetAll() ([]*domain.Appointment, error) {
 	query := `SELECT a.id, a.patient_id, a.service_id, a.appointment_date, a.status, a.price, a.duration_minutes, a.notes, a.created_at, a.updated_at,
 			  s.name as service_name
 			  FROM appointments a
@@ -109,7 +109,7 @@ func (r *PostgresAppointmentRepository) GetAll() ([]*domain.Appointment, error) 
 	return appointments, nil
 }
 
-func (r *PostgresAppointmentRepository) GetByDateRange(startDate, endDate time.Time) ([]*domain.Appointment, error) {
+func (r *AppointmentRepository) GetByDateRange(startDate, endDate time.Time) ([]*domain.Appointment, error) {
 	query := `SELECT id, patient_id, service_id, appointment_date, status, notes, created_at, updated_at 
 			  FROM appointments WHERE appointment_date BETWEEN $1 AND $2 
 			  ORDER BY appointment_date`
@@ -140,7 +140,7 @@ func (r *PostgresAppointmentRepository) GetByDateRange(startDate, endDate time.T
 	return appointments, nil
 }
 
-func (r *PostgresAppointmentRepository) Update(appointment *domain.Appointment) error {
+func (r *AppointmentRepository) Update(appointment *domain.Appointment) error {
 	query := `UPDATE appointments SET patient_id = $1, service_id = $2, appointment_date = $3, 
 			  status = $4, notes = $5, updated_at = CURRENT_TIMESTAMP 
 			  WHERE id = $6`
@@ -163,7 +163,7 @@ func (r *PostgresAppointmentRepository) Update(appointment *domain.Appointment) 
 	return nil
 }
 
-func (r *PostgresAppointmentRepository) Delete(id int) error {
+func (r *AppointmentRepository) Delete(id int) error {
 	query := `DELETE FROM appointments WHERE id = $1`
 
 	result, err := r.db.Exec(query, id)
@@ -183,7 +183,7 @@ func (r *PostgresAppointmentRepository) Delete(id int) error {
 	return nil
 }
 
-func (r *PostgresAppointmentRepository) GetByPatientID(patientID int) ([]*domain.Appointment, error) {
+func (r *AppointmentRepository) GetByPatientID(patientID int) ([]*domain.Appointment, error) {
 	query := `SELECT id, patient_id, service_id, appointment_date, status, notes, created_at, updated_at 
 			  FROM appointments WHERE patient_id = $1 ORDER BY appointment_date DESC`
 
@@ -213,14 +213,14 @@ func (r *PostgresAppointmentRepository) GetByPatientID(patientID int) ([]*domain
 	return appointments, nil
 }
 
-func (r *PostgresAppointmentRepository) GetByDate(date time.Time) ([]*domain.Appointment, error) {
+func (r *AppointmentRepository) GetByDate(date time.Time) ([]*domain.Appointment, error) {
 	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
 	endOfDay := startOfDay.Add(24 * time.Hour)
 
 	return r.GetByDateRange(startOfDay, endOfDay)
 }
 
-func (r *PostgresAppointmentRepository) CheckTimeConflict(date time.Time, timeStr string, excludeID int) (bool, error) {
+func (r *AppointmentRepository) CheckTimeConflict(date time.Time, timeStr string, excludeID int) (bool, error) {
 	query := `SELECT COUNT(*) FROM appointments 
 			  WHERE appointment_date = $1 AND id != $2`
 

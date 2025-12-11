@@ -1,4 +1,4 @@
-package infrastructure
+package repository
 
 import (
 	"database/sql"
@@ -7,15 +7,15 @@ import (
 	"github.com/sdk17/crmstom/internal/domain"
 )
 
-type PostgresServiceRepository struct {
+type ServiceRepository struct {
 	db *sql.DB
 }
 
-func NewPostgresServiceRepository(db *sql.DB) *PostgresServiceRepository {
-	return &PostgresServiceRepository{db: db}
+func NewServiceRepository(db *sql.DB) *ServiceRepository {
+	return &ServiceRepository{db: db}
 }
 
-func (r *PostgresServiceRepository) Create(service *domain.Service) error {
+func (r *ServiceRepository) Create(service *domain.Service) error {
 	query := `INSERT INTO services (name, type, notes) 
 			  VALUES ($1, $2, $3) RETURNING id, created_at, updated_at`
 
@@ -25,7 +25,7 @@ func (r *PostgresServiceRepository) Create(service *domain.Service) error {
 	return err
 }
 
-func (r *PostgresServiceRepository) GetByID(id int) (*domain.Service, error) {
+func (r *ServiceRepository) GetByID(id int) (*domain.Service, error) {
 	query := `SELECT id, name, type, notes, created_at, updated_at 
 			  FROM services WHERE id = $1`
 
@@ -44,7 +44,7 @@ func (r *PostgresServiceRepository) GetByID(id int) (*domain.Service, error) {
 	return service, nil
 }
 
-func (r *PostgresServiceRepository) GetAll() ([]*domain.Service, error) {
+func (r *ServiceRepository) GetAll() ([]*domain.Service, error) {
 	query := `SELECT id, name, type, notes, created_at, updated_at 
 			  FROM services ORDER BY name`
 
@@ -69,7 +69,7 @@ func (r *PostgresServiceRepository) GetAll() ([]*domain.Service, error) {
 	return services, nil
 }
 
-func (r *PostgresServiceRepository) Update(service *domain.Service) error {
+func (r *ServiceRepository) Update(service *domain.Service) error {
 	query := `UPDATE services SET name = $1, type = $2, notes = $3, updated_at = CURRENT_TIMESTAMP 
 			  WHERE id = $4`
 
@@ -77,13 +77,13 @@ func (r *PostgresServiceRepository) Update(service *domain.Service) error {
 	return err
 }
 
-func (r *PostgresServiceRepository) Delete(id int) error {
+func (r *ServiceRepository) Delete(id int) error {
 	query := `DELETE FROM services WHERE id = $1`
 	_, err := r.db.Exec(query, id)
 	return err
 }
 
-func (r *PostgresServiceRepository) GetByCategory(category string) ([]*domain.Service, error) {
+func (r *ServiceRepository) GetByCategory(category string) ([]*domain.Service, error) {
 	query := `SELECT id, name, type, notes, created_at, updated_at 
 			  FROM services WHERE type = $1 ORDER BY name`
 
@@ -108,7 +108,7 @@ func (r *PostgresServiceRepository) GetByCategory(category string) ([]*domain.Se
 	return services, nil
 }
 
-func (r *PostgresServiceRepository) Search(query string) ([]*domain.Service, error) {
+func (r *ServiceRepository) Search(query string) ([]*domain.Service, error) {
 	searchQuery := `SELECT id, name, type, notes, created_at, updated_at 
 					FROM services WHERE name ILIKE $1 OR notes ILIKE $1 ORDER BY name`
 

@@ -6,42 +6,31 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/sdk17/crmstom/internal/infrastructure"
+	"github.com/sdk17/crmstom/internal/repository"
 	httphandler "github.com/sdk17/crmstom/internal/interfaces/http"
 	"github.com/sdk17/crmstom/internal/usecase"
 )
 
 func main() {
-	// Инициализация репозиториев
-	var patientRepo infrastructure.PatientRepository
-	var appointmentRepo infrastructure.AppointmentRepository
-	var serviceRepo infrastructure.ServiceRepository
-	var doctorRepo *infrastructure.PostgresDoctorRepository
-
-	// Проверяем, есть ли переменная окружения для базы данных
-	if os.Getenv("DB_HOST") != "" {
-		// Используем PostgreSQL
-		fmt.Println("🗄️ Подключение к PostgreSQL...")
-		config := infrastructure.NewDatabaseConfig()
-		db, err := infrastructure.ConnectToDatabase(config)
-		if err != nil {
-			log.Fatalf("Ошибка подключения к базе данных: %v", err)
-		}
-		defer db.Close()
-		fmt.Println("✅ Подключение к PostgreSQL успешно")
-
-		patientRepo = infrastructure.NewPostgresPatientRepository(db)
-		appointmentRepo = infrastructure.NewPostgresAppointmentRepository(db)
-		serviceRepo = infrastructure.NewPostgresServiceRepository(db)
-		doctorRepo = infrastructure.NewPostgresDoctorRepository(db)
-	} else {
-		// Используем память (для разработки)
-		fmt.Println("💾 Использование in-memory хранилища...")
-		patientRepo = infrastructure.NewMemoryPatientRepository()
-		appointmentRepo = infrastructure.NewMemoryAppointmentRepository()
-		serviceRepo = infrastructure.NewMemoryServiceRepository()
-		log.Fatal("⚠️ Doctor repository requires PostgreSQL database. Please set DB_HOST environment variable.")
+	// Подключение к PostgreSQL
+	if os.Getenv("DB_HOST") == "" {
+		log.Fatal("DB_HOST environment variable is required. Please configure PostgreSQL connection.")
 	}
+
+	fmt.Println("Подключение к PostgreSQL...")
+	config := repository.NewDatabaseConfig()
+	db, err := repository.ConnectToDatabase(config)
+	if err != nil {
+		log.Fatalf("Ошибка подключения к базе данных: %v", err)
+	}
+	defer db.Close()
+	fmt.Println("Подключение к PostgreSQL успешно")
+
+	// Инициализация репозиториев
+	patientRepo := repository.NewPatientRepository(db)
+	appointmentRepo := repository.NewAppointmentRepository(db)
+	serviceRepo := repository.NewServiceRepository(db)
+	doctorRepo := repository.NewDoctorRepository(db)
 
 	// Инициализация use cases
 	patientUseCase := usecase.NewPatientUseCase(patientRepo)
