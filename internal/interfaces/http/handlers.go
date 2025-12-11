@@ -222,15 +222,15 @@ func (h *Handler) handleDeletePatient(w http.ResponseWriter, r *http.Request, id
 func (h *Handler) ServicesHandler(w http.ResponseWriter, r *http.Request) {
 	h.setCORSHeaders(w)
 
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		h.handleGetServices(w, r)
-	case "POST":
+	case http.MethodPost:
 		h.handleCreateService(w, r)
 	default:
 		h.writeErrorResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
@@ -280,7 +280,7 @@ func (h *Handler) handleCreateService(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	h.setCORSHeaders(w)
 
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
@@ -294,11 +294,11 @@ func (h *Handler) ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		h.handleGetService(w, r, id)
-	case "PUT":
+	case http.MethodPut:
 		h.handleUpdateService(w, r, id)
-	case "DELETE":
+	case http.MethodDelete:
 		h.handleDeleteService(w, r, id)
 	default:
 		h.writeErrorResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
@@ -347,15 +347,15 @@ func (h *Handler) handleDeleteService(w http.ResponseWriter, r *http.Request, id
 func (h *Handler) AppointmentsHandler(w http.ResponseWriter, r *http.Request) {
 	h.setCORSHeaders(w)
 
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		h.handleGetAppointments(w, r)
-	case "POST":
+	case http.MethodPost:
 		h.handleCreateAppointment(w, r)
 	default:
 		h.writeErrorResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
@@ -431,7 +431,7 @@ func (h *Handler) handleCreateAppointment(w http.ResponseWriter, r *http.Request
 func (h *Handler) AppointmentHandler(w http.ResponseWriter, r *http.Request) {
 	h.setCORSHeaders(w)
 
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
@@ -445,11 +445,11 @@ func (h *Handler) AppointmentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		h.handleGetAppointment(w, r, id)
-	case "PUT":
+	case http.MethodPut:
 		h.handleUpdateAppointment(w, r, id)
-	case "DELETE":
+	case http.MethodDelete:
 		h.handleDeleteAppointment(w, r, id)
 	default:
 		h.writeErrorResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
@@ -498,12 +498,12 @@ func (h *Handler) handleDeleteAppointment(w http.ResponseWriter, r *http.Request
 func (h *Handler) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	h.setCORSHeaders(w)
 
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
-	if r.Method != "GET" {
+	if r.Method != http.MethodGet {
 		h.writeErrorResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
@@ -521,15 +521,15 @@ func (h *Handler) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DoctorsHandler(w http.ResponseWriter, r *http.Request) {
 	h.setCORSHeaders(w)
 
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		h.handleGetDoctors(w, r)
-	case "POST":
+	case http.MethodPost:
 		h.handleCreateDoctor(w, r)
 	default:
 		h.writeErrorResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
@@ -540,7 +540,7 @@ func (h *Handler) DoctorsHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DoctorHandler(w http.ResponseWriter, r *http.Request) {
 	h.setCORSHeaders(w)
 
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
@@ -554,11 +554,11 @@ func (h *Handler) DoctorHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch r.Method {
-	case "GET":
+	case http.MethodGet:
 		h.handleGetDoctor(w, r, id)
-	case "PUT":
+	case http.MethodPut:
 		h.handleUpdateDoctor(w, r, id)
-	case "DELETE":
+	case http.MethodDelete:
 		h.handleDeleteDoctor(w, r, id)
 	default:
 		h.writeErrorResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
@@ -654,12 +654,12 @@ func (h *Handler) handleDeleteDoctor(w http.ResponseWriter, r *http.Request, id 
 func (h *Handler) AuthHandler(w http.ResponseWriter, r *http.Request) {
 	h.setCORSHeaders(w)
 
-	if r.Method == "OPTIONS" {
+	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		h.writeErrorResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}

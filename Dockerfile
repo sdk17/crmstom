@@ -38,6 +38,9 @@ COPY --from=builder /app/main .
 # Копирование статических файлов
 COPY --from=builder /app/static ./static
 
+# Копирование миграций
+COPY --from=builder /app/migrations ./migrations
+
 # Изменение владельца файлов
 RUN chown -R appuser:appgroup /root/
 

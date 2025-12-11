@@ -40,7 +40,7 @@ func (r *DoctorRepository) GetByID(id int) (*domain.Doctor, error) {
 	query := `
 		SELECT id, name, email, login, password, is_admin, created_at, updated_at
 		FROM doctors
-		WHERE id = $1`
+		WHERE id = $1 AND deleted_at IS NULL`
 
 	doctor := &domain.Doctor{}
 	err := r.db.QueryRow(query, id).Scan(
@@ -69,6 +69,7 @@ func (r *DoctorRepository) GetAll() ([]*domain.Doctor, error) {
 	query := `
 		SELECT id, name, email, login, password, is_admin, created_at, updated_at
 		FROM doctors
+		WHERE deleted_at IS NULL
 		ORDER BY name`
 
 	rows, err := r.db.Query(query)
@@ -104,7 +105,7 @@ func (r *DoctorRepository) Update(doctor *domain.Doctor) error {
 	query := `
 		UPDATE doctors
 		SET name = $1, email = $2, login = $3, password = $4, is_admin = $5, updated_at = $6
-		WHERE id = $7`
+		WHERE id = $7 AND deleted_at IS NULL`
 
 	result, err := r.db.Exec(
 		query,
@@ -132,9 +133,9 @@ func (r *DoctorRepository) Update(doctor *domain.Doctor) error {
 	return nil
 }
 
-// Delete удаляет врача
+// Delete удаляет врача (soft delete)
 func (r *DoctorRepository) Delete(id int) error {
-	query := `DELETE FROM doctors WHERE id = $1`
+	query := `UPDATE doctors SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`
 
 	result, err := r.db.Exec(query, id)
 	if err != nil {
@@ -158,7 +159,7 @@ func (r *DoctorRepository) GetByLogin(login string) (*domain.Doctor, error) {
 	query := `
 		SELECT id, name, email, login, password, is_admin, created_at, updated_at
 		FROM doctors
-		WHERE login = $1`
+		WHERE login = $1 AND deleted_at IS NULL`
 
 	doctor := &domain.Doctor{}
 	err := r.db.QueryRow(query, login).Scan(

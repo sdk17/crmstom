@@ -27,8 +27,8 @@ func (r *PatientRepository) Create(patient *domain.Patient) error {
 }
 
 func (r *PatientRepository) GetByID(id int) (*domain.Patient, error) {
-	query := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at 
-			  FROM patients WHERE id = $1`
+	query := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at
+			  FROM patients WHERE id = $1 AND deleted_at IS NULL`
 
 	patient := &domain.Patient{}
 	err := r.db.QueryRow(query, id).Scan(
@@ -47,8 +47,8 @@ func (r *PatientRepository) GetByID(id int) (*domain.Patient, error) {
 }
 
 func (r *PatientRepository) GetAll() ([]*domain.Patient, error) {
-	query := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at 
-			  FROM patients ORDER BY created_at DESC`
+	query := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at
+			  FROM patients WHERE deleted_at IS NULL ORDER BY created_at DESC`
 
 	rows, err := r.db.Query(query)
 	if err != nil {
@@ -73,9 +73,9 @@ func (r *PatientRepository) GetAll() ([]*domain.Patient, error) {
 }
 
 func (r *PatientRepository) Update(patient *domain.Patient) error {
-	query := `UPDATE patients SET name = $1, phone = $2, email = $3, birth_date = $4, 
-			  address = $5, updated_at = CURRENT_TIMESTAMP 
-			  WHERE id = $6`
+	query := `UPDATE patients SET name = $1, phone = $2, email = $3, birth_date = $4,
+			  address = $5, updated_at = CURRENT_TIMESTAMP
+			  WHERE id = $6 AND deleted_at IS NULL`
 
 	result, err := r.db.Exec(query, patient.Name, patient.Phone, patient.Email,
 		patient.BirthDate, patient.Address, patient.ID)
@@ -96,7 +96,7 @@ func (r *PatientRepository) Update(patient *domain.Patient) error {
 }
 
 func (r *PatientRepository) Delete(id int) error {
-	query := `DELETE FROM patients WHERE id = $1`
+	query := `UPDATE patients SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND deleted_at IS NULL`
 
 	result, err := r.db.Exec(query, id)
 	if err != nil {
@@ -116,8 +116,8 @@ func (r *PatientRepository) Delete(id int) error {
 }
 
 func (r *PatientRepository) GetByPhone(phone string) (*domain.Patient, error) {
-	query := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at 
-			  FROM patients WHERE phone = $1`
+	query := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at
+			  FROM patients WHERE phone = $1 AND deleted_at IS NULL`
 
 	patient := &domain.Patient{}
 	err := r.db.QueryRow(query, phone).Scan(
@@ -136,8 +136,8 @@ func (r *PatientRepository) GetByPhone(phone string) (*domain.Patient, error) {
 }
 
 func (r *PatientRepository) Search(query string) ([]*domain.Patient, error) {
-	searchQuery := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at 
-					FROM patients WHERE name ILIKE $1 OR phone ILIKE $1 OR email ILIKE $1 
+	searchQuery := `SELECT id, name, phone, email, birth_date, address, created_at, updated_at
+					FROM patients WHERE deleted_at IS NULL AND (name ILIKE $1 OR phone ILIKE $1 OR email ILIKE $1)
 					ORDER BY name`
 
 	rows, err := r.db.Query(searchQuery, "%"+query+"%")

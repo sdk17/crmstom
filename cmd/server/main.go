@@ -1,13 +1,16 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
-	"github.com/sdk17/crmstom/internal/repository"
+	_ "github.com/lib/pq"
+	"github.com/pressly/goose/v3"
 	httphandler "github.com/sdk17/crmstom/internal/interfaces/http"
+	"github.com/sdk17/crmstom/internal/repository"
 	"github.com/sdk17/crmstom/internal/usecase"
 )
 
@@ -25,6 +28,11 @@ func main() {
 	}
 	defer db.Close()
 	fmt.Println("Подключение к PostgreSQL успешно")
+
+	// Run migrations
+	if err := runMigrations(db); err != nil {
+		log.Fatalf("Ошибка применения миграций: %v", err)
+	}
 
 	// Инициализация репозиториев
 	patientRepo := repository.NewPatientRepository(db)
@@ -119,4 +127,23 @@ func serveReports(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
 	http.ServeFile(w, r, "static/reports.html")
+}
+
+func runMigrations(db *sql.DB) error {
+	migrationsPath := os.Getenv("MIGRATIONS_PATH")
+	if migrationsPath == "" {
+		migrationsPath = "migrations"
+	}
+
+	if err := goose.SetDialect("postgres"); err != nil {
+		return fmt.Errorf("failed to set goose dialect: %w", err)
+	}
+
+	fmt.Printf("Применение миграций из %s...\n", migrationsPath)
+	if err := goose.Up(db, migrationsPath); err != nil {
+		return fmt.Errorf("failed to run migrations: %w", err)
+	}
+	fmt.Println("Миграции применены успешно")
+
+	return nil
 }

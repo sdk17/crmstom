@@ -1,118 +1,79 @@
-# Makefile для CRM Стоматология
+# Makefile for CRM Stomatology
 
-.PHONY: build run test test-integration clean deps lint fmt mock-gen
+.PHONY: start stop test test-integration test-coverage clean lint fmt mock-gen help
 
-# Переменные
-BINARY_NAME=crm_ar
-BUILD_DIR=build
-MAIN_PATH=cmd/server/main.go
+# Start project using docker-compose
+start:
+	@echo "Starting CRM Stomatology..."
+	@docker compose up -d --build
+	@echo ""
+	@echo "Application started!"
+	@echo "UI: http://localhost:8080"
+	@echo ""
+	@echo "Use 'make stop' to stop the application"
 
-# Сборка приложения
-build:
-	@echo "🔨 Сборка приложения..."
-	@mkdir -p $(BUILD_DIR)
-	@go build -o $(BUILD_DIR)/$(BINARY_NAME) $(MAIN_PATH)
-	@echo "✅ Сборка завершена: $(BUILD_DIR)/$(BINARY_NAME)"
+# Stop docker-compose
+stop:
+	@echo "Stopping CRM Stomatology..."
+	@docker compose down
+	@echo "Application stopped"
 
-# Запуск приложения
-run:
-	@echo "🚀 Запуск сервера..."
-	@go run $(MAIN_PATH)
+# View logs
+logs:
+	@docker compose logs -f app
 
-# Запуск в режиме разработки с hot reload
-dev:
-	@echo "🔥 Запуск в режиме разработки..."
-	@go run $(MAIN_PATH)
-
-# Установка зависимостей
-deps:
-	@echo "📦 Установка зависимостей..."
-	@go mod tidy
-	@go mod download
-
-# Форматирование кода
+# Format code
 fmt:
-	@echo "✨ Форматирование кода..."
+	@echo "Formatting code..."
 	@go fmt ./...
 
-# Линтинг
+# Lint code
 lint:
-	@echo "🔍 Проверка кода..."
+	@echo "Linting code..."
 	@go vet ./...
-	@echo "✅ Линтинг завершен"
+	@echo "Linting complete"
 
-# Генерация моков
+# Generate mocks
 mock-gen:
-	@echo "🔧 Генерация моков..."
+	@echo "Generating mocks..."
 	@go generate ./gen/...
-	@echo "✅ Моки сгенерированы"
+	@echo "Mocks generated"
 
-# Тесты (unit)
+# Run unit tests
 test:
-	@echo "🧪 Запуск unit тестов..."
+	@echo "Running unit tests..."
 	@go test -v ./...
-	@echo "🧪 Запуск integration тестов..."
+	@echo "Running integration tests..."
 	@go test -v -tags=integration ./...
 
-# Integration тесты отдельно
+# Run integration tests only
 test-integration:
-	@echo "🧪 Запуск integration тестов..."
+	@echo "Running integration tests..."
 	@go test -v -tags=integration ./...
 
-# Тесты с покрытием
+# Run tests with coverage
 test-coverage:
-	@echo "📊 Тесты с покрытием..."
+	@echo "Running tests with coverage..."
 	@go test -v -cover ./...
 
-# Очистка
+# Clean build artifacts and docker volumes
 clean:
-	@echo "🧹 Очистка..."
-	@rm -rf $(BUILD_DIR)
+	@echo "Cleaning..."
+	@docker compose down -v 2>/dev/null || true
 	@go clean
+	@echo "Clean complete"
 
-# Полная очистка
-clean-all: clean
-	@rm -rf vendor/
-	@go mod tidy
-
-# Проверка всех зависимостей
-check:
-	@echo "🔍 Проверка зависимостей..."
-	@go mod verify
-
-# Обновление зависимостей
-update:
-	@echo "🔄 Обновление зависимостей..."
-	@go get -u ./...
-	@go mod tidy
-
-# Создание docker образа
-docker-build:
-	@echo "🐳 Создание Docker образа..."
-	@docker build -t crm_ar:latest .
-
-# Запуск в Docker
-docker-run:
-	@echo "🐳 Запуск в Docker..."
-	@docker run -p 8080:8080 crm_ar:latest
-
-# Помощь
+# Help
 help:
-	@echo "📋 Доступные команды:"
-	@echo "  build         - Сборка приложения"
-	@echo "  run           - Запуск сервера"
-	@echo "  dev           - Запуск в режиме разработки"
-	@echo "  deps          - Установка зависимостей"
-	@echo "  fmt           - Форматирование кода"
-	@echo "  lint          - Линтинг кода"
-	@echo "  mock-gen      - Генерация моков"
-	@echo "  test          - Запуск всех тестов (unit + integration)"
-	@echo "  test-integration - Запуск только integration тестов"
-	@echo "  test-coverage - Тесты с покрытием"
-	@echo "  clean         - Очистка"
-	@echo "  clean-all     - Полная очистка"
-	@echo "  check         - Проверка зависимостей"
-	@echo "  update        - Обновление зависимостей"
-	@echo "  docker-build  - Создание Docker образа"
-	@echo "  docker-run    - Запуск в Docker"
-	@echo "  help          - Показать эту справку"
+	@echo "Available commands:"
+	@echo "  start           - Start project using docker-compose (UI: http://localhost:8080)"
+	@echo "  stop            - Stop docker-compose"
+	@echo "  logs            - View application logs"
+	@echo "  fmt             - Format code"
+	@echo "  lint            - Lint code"
+	@echo "  mock-gen        - Generate mocks"
+	@echo "  test            - Run all tests (unit + integration)"
+	@echo "  test-integration - Run integration tests only"
+	@echo "  test-coverage   - Run tests with coverage"
+	@echo "  clean           - Clean build artifacts and docker volumes"
+	@echo "  help            - Show this help"
