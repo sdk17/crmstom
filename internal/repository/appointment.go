@@ -189,11 +189,11 @@ func (r *AppointmentRepository) Update(appointment *domain.Appointment) error {
 	}
 
 	query := `UPDATE appointments SET patient_id = $1, service_id = $2, appointment_date = $3,
-			  status = $4, notes = $5, updated_at = CURRENT_TIMESTAMP
-			  WHERE id = $6 AND deleted_at IS NULL`
+			  status = $4, notes = $5, price = $6, duration_minutes = $7, updated_at = CURRENT_TIMESTAMP
+			  WHERE id = $8 AND deleted_at IS NULL`
 
 	result, err := r.db.Exec(query, appointment.PatientID, serviceID,
-		appointment.Date, appointment.Status, appointment.Notes, appointment.ID)
+		appointment.Date, appointment.Status, appointment.Notes, appointment.Price, appointment.Duration, appointment.ID)
 	if err != nil {
 		return err
 	}

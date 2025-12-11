@@ -477,7 +477,7 @@ func (h *Handler) handleUpdateAppointment(w http.ResponseWriter, r *http.Request
 
 	appointment.ID = id
 	if err := h.appointmentUseCase.UpdateAppointment(&appointment); err != nil {
-		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to update appointment")
+		h.writeErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
 

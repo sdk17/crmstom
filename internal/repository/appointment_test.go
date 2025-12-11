@@ -174,6 +174,8 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 			Service:   service.Name,
 			Date:      time.Now().Add(24 * time.Hour),
 			Status:    domain.StatusScheduled,
+			Price:     100.00,
+			Duration:  30,
 			Notes:     "Original note",
 		}
 		err = appointmentRepo.Create(appointment)
@@ -181,6 +183,8 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 
 		appointment.Status = domain.StatusCompleted
 		appointment.Notes = "Updated note"
+		appointment.Price = 200.00
+		appointment.Duration = 60
 		err = appointmentRepo.Update(appointment)
 		require.NoError(t, err)
 
@@ -188,18 +192,46 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, domain.StatusCompleted, found.Status)
 		assert.Equal(t, "Updated note", found.Notes)
+		assert.Equal(t, 200.00, found.Price)
+		assert.Equal(t, 60, found.Duration)
 	})
 
 	t.Run("Update_NotFound", func(t *testing.T) {
 		err := testDB.TruncateTables(ctx)
 		require.NoError(t, err)
 
+		service := createTestService(t, "Test Service")
+
 		appointment := &domain.Appointment{
 			ID:        9999,
 			PatientID: 1,
 			Date:      time.Now(),
 			Status:    domain.StatusScheduled,
+			Service:   service.Name,
 		}
+		err = appointmentRepo.Update(appointment)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "не найдена")
+	})
+
+	t.Run("Update_ServiceNotFound", func(t *testing.T) {
+		err := testDB.TruncateTables(ctx)
+		require.NoError(t, err)
+
+		patient := createTestPatient(t, "Patient ServiceNotFound")
+		service := createTestService(t, "Original Service")
+
+		appointment := &domain.Appointment{
+			PatientID: patient.ID,
+			Service:   service.Name,
+			Date:      time.Now().Add(24 * time.Hour),
+			Status:    domain.StatusScheduled,
+		}
+		err = appointmentRepo.Create(appointment)
+		require.NoError(t, err)
+
+		// Try to update with non-existent service
+		appointment.Service = "Non-existent Service"
 		err = appointmentRepo.Update(appointment)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "не найдена")

@@ -3,280 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Финансовые отчёты - CRM Стоматология</title>
+    <title>Отчёты - CRM Стоматология</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+    <link rel="stylesheet" href="/static/css/common.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .nav {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .nav a {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 0 10px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .nav a:hover {
-            background-color: #0056b3;
-        }
-        .summary {
-            background-color: #e8f5e8;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: #2d5a2d;
-        }
-        .chart-container {
-            margin: 30px 0;
-            text-align: center;
-        }
-        .chart-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        #chartCanvas {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: white;
-        }
-        .table-container {
-            margin: 30px 0;
-        }
-        .table-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-            color: #333;
-        }
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-        .loading {
-            text-align: center;
-            color: #666;
-            font-style: italic;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
+        .chart-container { background: white; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .chart-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #333; }
+        .chart-canvas { width: 100%; height: 300px; }
+        .total-card { background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 30px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+        .total-amount { font-size: 3rem; font-weight: bold; }
+        .total-label { font-size: 1rem; opacity: 0.9; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📊 Финансовые отчёты</h1>
-        
+
         <div class="nav">
             <a href="/">🏠 Главная</a>
             <a href="/patients.html">👥 Пациенты</a>
             <a href="/appointments.html">📅 Записи</a>
-            <a href="/services.html">⚙️ Настройки</a>
-            <a href="/reports.html">🔄 Обновить</a>
+            <a href="/doctors.html">👨‍⚕️ Врачи</a>
+            <a href="/services.html">⚙️ Услуги</a>
+            <a href="/reports.html" class="active">📊 Отчёты</a>
         </div>
 
         <div id="loading" class="loading">
-            Загрузка данных...
-        </div>
-
-        <div id="error" class="error" style="display: none;">
-            Ошибка загрузки данных
+            <div class="loading-spinner"></div>
+            <div>Загрузка отчётов...</div>
         </div>
 
         <div id="content" style="display: none;">
-            <div class="summary" id="totalIncome">
-                Общий доход: <span id="totalAmount">0</span> ₸
+            <div class="total-card">
+                <div class="total-amount" id="totalAmount">0</div>
+                <div class="total-label">Общий доход (₸)</div>
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">График доходов по дням</div>
-                <canvas id="chartCanvas" width="800" height="400"></canvas>
+                <div class="chart-title">Доход по дням</div>
+                <canvas id="chart" class="chart-canvas"></canvas>
             </div>
 
-            <div class="table-container">
-                <div class="table-title">Доходы по дням</div>
-                <table id="incomeTable">
-                    <thead>
-                        <tr>
-                            <th>Дата</th>
-                            <th>Сумма (₸)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                    </tbody>
-                </table>
-            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Доход (₸)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <div id="error" class="error-state" style="display: none;">
+            Ошибка загрузки данных. <a href="#" onclick="loadData()">Попробовать снова</a>
         </div>
     </div>
 
+    <div id="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/common.js"></script>
     <script>
-        // Загружаем данные при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFinanceData();
-        });
+        let chart = null;
 
-        async function loadFinanceData() {
+        async function loadData() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+
             try {
-                const response = await fetch('/api/reports');
-                if (!response.ok) {
-                    throw new Error('Ошибка загрузки данных');
-                }
+                const response = await API.get('/api/reports');
+                const data = response.data;
 
-                const data = await response.json();
-                displayData(data);
+                document.getElementById('totalAmount').textContent = Currency.format(data.total_income || 0);
 
-                // Скрываем загрузку и показываем контент
+                renderTable(data.by_day || []);
+                renderChart(data.by_day || []);
+
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('content').style.display = 'block';
-
             } catch (error) {
-                console.error('Ошибка:', error);
+                console.error('Error:', error);
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error').style.display = 'block';
             }
         }
 
-        function displayData(response) {
-            const data = response.data;
+        function renderTable(byDay) {
+            const tbody = document.getElementById('tableBody');
 
-            // Обновляем общий доход
-            document.getElementById('totalAmount').textContent =
-                new Intl.NumberFormat('ru-RU').format(data.total_income || 0);
-
-            // Заполняем таблицу
-            const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = '';
-
-            // Если есть данные по дням, используем их, иначе показываем общую статистику
-            if (data.by_day && data.by_day.length > 0) {
-                const sortedByDay = data.by_day.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-                sortedByDay.forEach(day => {
-                    const row = tableBody.insertRow();
-                    row.insertCell(0).textContent = formatDate(day.date);
-                    row.insertCell(1).textContent = new Intl.NumberFormat('ru-RU').format(day.income);
-                });
-
-                // Рисуем график
-                drawChart(sortedByDay);
-            } else {
-                // Показываем общую статистику
-                const row = tableBody.insertRow();
-                row.insertCell(0).textContent = 'Общий доход';
-                row.insertCell(1).textContent = new Intl.NumberFormat('ru-RU').format(data.total_income || 0);
+            if (!byDay.length) {
+                EmptyState.showInTable(tbody, 2, '📊', 'Нет данных');
+                return;
             }
+
+            const sorted = [...byDay].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            tbody.innerHTML = sorted.map(d => `
+                <tr>
+                    <td>${DateUtils.format(d.date)}</td>
+                    <td><strong>${Currency.format(d.income)}</strong> ₸</td>
+                </tr>
+            `).join('');
         }
 
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('ru-RU');
-        }
+        function renderChart(byDay) {
+            const ctx = document.getElementById('chart').getContext('2d');
 
-        function drawChart(data) {
-            const canvas = document.getElementById('chartCanvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Очищаем canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            if (data.length === 0) return;
-            
-            const padding = 60;
-            const chartWidth = canvas.width - 2 * padding;
-            const chartHeight = canvas.height - 2 * padding;
-            
-            // Находим максимальное значение для масштабирования
-            const maxIncome = Math.max(...data.map(d => d.income));
-            
-            // Рисуем оси
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(padding, padding);
-            ctx.lineTo(padding, canvas.height - padding);
-            ctx.lineTo(canvas.width - padding, canvas.height - padding);
-            ctx.stroke();
-            
-            // Рисуем столбцы
-            const barWidth = chartWidth / data.length * 0.8;
-            const barSpacing = chartWidth / data.length;
-            
-            data.forEach((day, index) => {
-                const barHeight = (day.income / maxIncome) * chartHeight;
-                const x = padding + index * barSpacing + (barSpacing - barWidth) / 2;
-                const y = canvas.height - padding - barHeight;
-                
-                // Рисуем столбец
-                ctx.fillStyle = '#007bff';
-                ctx.fillRect(x, y, barWidth, barHeight);
-                
-                // Рисуем значение сверху столбца
-                ctx.fillStyle = '#333';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(
-                    new Intl.NumberFormat('ru-RU').format(day.income),
-                    x + barWidth / 2,
-                    y - 5
-                );
-                
-                // Рисуем дату снизу
-                ctx.fillText(
-                    formatDate(day.date),
-                    x + barWidth / 2,
-                    canvas.height - padding + 20
-                );
+            if (chart) chart.destroy();
+
+            if (!byDay.length) return;
+
+            const sorted = [...byDay].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const labels = sorted.map(d => DateUtils.format(d.date));
+            const values = sorted.map(d => d.income);
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Доход (₸)',
+                        data: values,
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: 'rgb(40, 167, 69)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => Currency.format(value) + ' ₸'
+                            }
+                        }
+                    }
+                }
             });
-            
-            // Рисуем заголовок графика
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 16px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('Доходы по дням', canvas.width / 2, 30);
         }
+
+        document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
 </html>

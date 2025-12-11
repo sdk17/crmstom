@@ -3,905 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Настройки системы - CRM Стоматология</title>
+    <title>Услуги - CRM Стоматология</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+    <link rel="stylesheet" href="/static/css/common.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .nav {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .nav a {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 0 10px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .nav a:hover {
-            background-color: #0056b3;
-        }
-        .add-service {
-            background-color: #28a745;
-            margin-bottom: 20px;
-        }
-        .add-service:hover {
-            background-color: #218838;
-        }
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-        .service-card {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .service-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-        .service-category {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-        .service-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .service-description {
-            color: #666;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-        .service-price {
-            font-size: 20px;
-            font-weight: bold;
-            color: #28a745;
-            margin-bottom: 15px;
-        }
-        .service-duration {
-            color: #666;
-            margin-bottom: 15px;
-        }
-        .service-actions {
-            display: flex;
-            gap: 10px;
-        }
-        .btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.2s;
-        }
-        .btn-edit {
-            background-color: #ffc107;
-            color: #000;
-        }
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-view {
-            background-color: #17a2b8;
-            color: white;
-        }
-        .services-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .services-table th,
-        .services-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .services-table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-            color: #333;
-        }
-        .services-table tr:hover {
-            background-color: #f5f5f5;
-        }
-        .view-toggle {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .view-toggle button {
-            padding: 10px 20px;
-            margin: 0 5px;
-            border: 1px solid #007bff;
-            background-color: white;
-            color: #007bff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .view-toggle button.active {
-            background-color: #007bff;
-            color: white;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 600px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .form-group textarea {
-            height: 80px;
-            resize: vertical;
-        }
-        .form-actions {
-            text-align: right;
-            margin-top: 20px;
-        }
-        .form-actions button {
-            padding: 10px 20px;
-            margin-left: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn-save {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-cancel {
-            background-color: #6c757d;
-            color: white;
-        }
-        .category-filter {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .category-filter select {
-            padding: 8px 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+        .service-card { background: white; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; transition: transform 0.2s, box-shadow 0.2s; }
+        .service-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .service-type { font-size: 12px; color: #007bff; text-transform: uppercase; font-weight: 600; margin-bottom: 8px; }
+        .service-name { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px; }
+        .service-notes { color: #666; font-size: 13px; margin-bottom: 12px; }
+        .service-actions { display: flex; gap: 8px; }
+        .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .filter-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+        .filter-btn:hover, .filter-btn.active { background: #007bff; color: white; border-color: #007bff; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>⚙️ Настройки системы</h1>
-        
+        <h1>⚙️ Услуги</h1>
+
         <div class="nav">
             <a href="/">🏠 Главная</a>
             <a href="/patients.html">👥 Пациенты</a>
             <a href="/appointments.html">📅 Записи</a>
-            <a href="/services.html">⚙️ Настройки</a>
+            <a href="/doctors.html">👨‍⚕️ Врачи</a>
+            <a href="/services.html" class="active">⚙️ Услуги</a>
             <a href="/reports.html">📊 Отчёты</a>
         </div>
 
-        <div class="view-toggle">
-            <button id="servicesTabBtn" class="active" onclick="switchTab('services')">🦷 Услуги</button>
-            <button id="doctorsTabBtn" onclick="switchTab('doctors')">👨‍⚕️ Врачи</button>
-        </div>
-
-        <div class="view-toggle" id="servicesViewToggle" style="display: block;">
-            <button id="cardViewBtn" class="active" onclick="switchView('card')">🃏 Карточки</button>
-            <button id="tableViewBtn" onclick="switchView('table')">📋 Таблица</button>
-        </div>
-
-        <div class="category-filter">
-            <select id="categoryFilter" onchange="filterByCategory()">
-                <option value="">Все категории</option>
-                <option value="consultation">Консультации</option>
-                <option value="treatment">Лечение</option>
-                <option value="prosthetics">Протезирование</option>
-                <option value="surgery">Хирургия</option>
-                <option value="prevention">Профилактика</option>
-            </select>
-        </div>
-
-        <div id="servicesActions" style="display: block;">
-            <button class="nav add-service" onclick="openAddServiceModal()">
-                ➕ Добавить услугу
-            </button>
-        </div>
-
-        <div id="doctorsActions" style="display: none;">
-            <button class="nav add-service" onclick="openAddDoctorModal()">
-                ➕ Добавить врача
-            </button>
-        </div>
-
-        <!-- Карточное представление -->
-        <div id="cardView">
-            <div class="services-grid" id="servicesGrid">
-                <!-- Карточки услуг будут сгенерированы через JavaScript -->
+        <div class="quick-stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalCount">-</div>
+                <div class="stat-label">Всего услуг</div>
             </div>
         </div>
 
-        <!-- Табличное представление -->
-        <div id="tableView" style="display: none;">
-            <table class="services-table" id="servicesTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Название</th>
-                        <th>Тип</th>
-                        <th>Примечания</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody id="servicesTableBody">
-                    <!-- Данные будут загружены через JavaScript -->
-                </tbody>
-            </table>
+        <div style="margin-bottom: 20px;">
+            <button class="btn btn-success" onclick="openModal()">➕ Добавить услугу</button>
         </div>
 
-        <!-- Секция врачей -->
-        <div id="doctorsView" style="display: none;">
-            <div class="services-grid" id="doctorsGrid">
-                <!-- Карточки врачей будут сгенерированы через JavaScript -->
-            </div>
-        </div>
+        <div class="filter-bar" id="filterBar"></div>
+
+        <div class="services-grid" id="servicesGrid"></div>
     </div>
 
-    <!-- Модальное окно для добавления/редактирования услуги -->
-    <div id="serviceModal" class="modal">
+    <!-- Modal -->
+    <div id="modal" class="modal">
         <div class="modal-content">
             <h2 id="modalTitle">Добавить услугу</h2>
-            <form id="serviceForm">
+            <form id="form">
                 <div class="form-group">
-                    <label for="serviceName">Название услуги *</label>
-                    <input type="text" id="serviceName" required>
+                    <label for="name">Название *</label>
+                    <input type="text" id="name" required>
                 </div>
                 <div class="form-group">
-                    <label for="serviceType">Тип *</label>
-                    <select id="serviceType" required>
-                        <option value="">Выберите тип</option>
-                        <option value="Консультация">Консультация</option>
-                        <option value="Лечение кариеса">Лечение кариеса</option>
-                        <option value="Лечение пульпита">Лечение пульпита</option>
-                        <option value="Удаление зубов">Удаление зубов</option>
-                        <option value="Гигиена">Гигиена</option>
-                        <option value="Протезирование">Протезирование</option>
-                        <option value="Имплантация">Имплантация</option>
-                        <option value="Детская стоматология">Детская стоматология</option>
-                    </select>
+                    <label for="type">Категория *</label>
+                    <input type="text" id="type" required placeholder="Например: Лечение кариеса">
                 </div>
                 <div class="form-group">
-                    <label for="serviceNotes">Примечания</label>
-                    <textarea id="serviceNotes" placeholder="Дополнительная информация"></textarea>
+                    <label for="notes">Описание</label>
+                    <textarea id="notes" rows="3"></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closeServiceModal()">Отмена</button>
-                    <button type="submit" class="btn-save">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                    <button type="submit" class="btn btn-success">Сохранить</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Модальное окно для добавления/редактирования врача -->
-    <div id="doctorModal" class="modal">
-        <div class="modal-content">
-            <h2 id="doctorModalTitle">Добавить врача</h2>
-            <form id="doctorForm">
-                <div class="form-group">
-                    <label for="doctorName">ФИО врача *</label>
-                    <input type="text" id="doctorName" required>
-                </div>
-                <div class="form-group">
-                    <label for="doctorEmail">Email</label>
-                    <input type="email" id="doctorEmail" placeholder="doctor@clinic.com">
-                </div>
-                <div class="form-group">
-                    <label for="doctorLogin">Логин</label>
-                    <input type="text" id="doctorLogin" placeholder="doctor_login">
-                </div>
-                <div class="form-group">
-                    <label for="doctorPassword">Пароль</label>
-                    <input type="password" id="doctorPassword" placeholder="Пароль для входа">
-                </div>
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" id="doctorIsAdmin" style="width: auto; cursor: pointer;">
-                        <span>Администратор (полный доступ к системе)</span>
-                    </label>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closeDoctorModal()">Отмена</button>
-                    <button type="submit" class="btn-save">Сохранить</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <div id="toast"></div>
 
+    <script src="/static/js/common.js"></script>
     <script>
-        // Данные услуг и врачей загружаются с сервера
         let services = [];
-        let doctors = [];
+        let editingId = null;
+        let activeFilter = null;
 
-        let currentEditingId = null;
-        let currentView = 'card';
-        let currentCategory = '';
-        let currentTab = 'services';
+        async function loadData() {
+            const grid = document.getElementById('servicesGrid');
+            Loading.show(grid);
 
-        // Глобальные функции для кнопок
-        window.openAddServiceModal = function() {
-            console.log('Открываем модальное окно добавления услуги');
-            currentEditingId = null;
-            document.getElementById('modalTitle').textContent = 'Добавить услугу';
-            document.getElementById('serviceForm').reset();
-            document.getElementById('serviceModal').style.display = 'block';
-        };
-
-        window.closeServiceModal = function() {
-            console.log('Закрываем модальное окно услуги');
-            document.getElementById('serviceModal').style.display = 'none';
-            currentEditingId = null;
-        };
-
-        window.editService = function(id) {
-            console.log('Редактируем услугу с ID:', id);
-            const service = services.find(s => s.id === id);
-            if (!service) return;
-
-            currentEditingId = id;
-            document.getElementById('modalTitle').textContent = 'Редактировать услугу';
-            document.getElementById('serviceName').value = service.name;
-            document.getElementById('serviceType').value = service.type;
-            document.getElementById('serviceNotes').value = service.notes;
-            document.getElementById('serviceModal').style.display = 'block';
-        };
-
-        window.viewService = function(id) {
-            console.log('Просматриваем услугу с ID:', id);
-            const service = services.find(s => s.id === id);
-            if (!service) return;
-
-            alert(`Услуга: ${service.name}\nКатегория: ${getCategoryName(service.category)}\nОписание: ${service.description}\nЦена: ${service.price.toLocaleString()} ₸\nДлительность: ${service.duration} мин\nПримечания: ${service.notes}`);
-        };
-
-        window.deleteService = function(id) {
-            console.log('Удаляем услугу с ID:', id);
-            if (confirm('Вы уверены, что хотите удалить эту услугу?')) {
-                services = services.filter(s => s.id !== id);
-                loadServices();
+            try {
+                const data = await API.get('/api/services');
+                services = Array.isArray(data) ? data : (data.data || []);
+                document.getElementById('totalCount').textContent = services.length;
+                renderFilters();
+                render();
+            } catch (error) {
+                console.error('Error:', error);
+                Toast.error('Ошибка загрузки данных');
             }
-        };
-
-        window.switchView = function(view) {
-            console.log('Переключаем вид на:', view);
-            currentView = view;
-            
-            if (view === 'card') {
-                document.getElementById('cardView').style.display = 'block';
-                document.getElementById('tableView').style.display = 'none';
-                document.getElementById('cardViewBtn').classList.add('active');
-                document.getElementById('tableViewBtn').classList.remove('active');
-            } else {
-                document.getElementById('cardView').style.display = 'none';
-                document.getElementById('tableView').style.display = 'block';
-                document.getElementById('tableViewBtn').classList.add('active');
-                document.getElementById('cardViewBtn').classList.remove('active');
-            }
-            
-            loadServices();
-        };
-
-        window.filterByCategory = function() {
-            currentCategory = document.getElementById('categoryFilter').value;
-            loadServices();
-        };
-
-        // Функции для управления врачами
-        window.switchTab = function(tab) {
-            console.log('Переключаем вкладку на:', tab);
-            currentTab = tab;
-            
-            if (tab === 'services') {
-                document.getElementById('servicesTabBtn').classList.add('active');
-                document.getElementById('doctorsTabBtn').classList.remove('active');
-                document.getElementById('servicesViewToggle').style.display = 'block';
-                document.getElementById('servicesActions').style.display = 'block';
-                document.getElementById('doctorsActions').style.display = 'none';
-                document.getElementById('cardView').style.display = 'block';
-                document.getElementById('tableView').style.display = 'none';
-                document.getElementById('doctorsView').style.display = 'none';
-                loadServices();
-            } else {
-                document.getElementById('doctorsTabBtn').classList.add('active');
-                document.getElementById('servicesTabBtn').classList.remove('active');
-                document.getElementById('servicesViewToggle').style.display = 'none';
-                document.getElementById('servicesActions').style.display = 'none';
-                document.getElementById('doctorsActions').style.display = 'block';
-                document.getElementById('cardView').style.display = 'none';
-                document.getElementById('tableView').style.display = 'none';
-                document.getElementById('doctorsView').style.display = 'block';
-                loadDoctors();
-            }
-        };
-
-        window.openAddDoctorModal = function() {
-            console.log('Открываем модальное окно добавления врача');
-            currentEditingId = null;
-            document.getElementById('doctorModalTitle').textContent = 'Добавить врача';
-            document.getElementById('doctorForm').reset();
-            document.getElementById('doctorModal').style.display = 'block';
-        };
-
-        window.closeDoctorModal = function() {
-            console.log('Закрываем модальное окно врача');
-            document.getElementById('doctorModal').style.display = 'none';
-            currentEditingId = null;
-        };
-
-        window.editDoctor = function(id) {
-            console.log('Редактируем врача с ID:', id);
-            const doctor = doctors.find(d => d.id === id);
-            if (!doctor) return;
-
-            currentEditingId = id;
-            document.getElementById('doctorModalTitle').textContent = 'Редактировать врача';
-            document.getElementById('doctorName').value = doctor.name;
-            document.getElementById('doctorEmail').value = doctor.email || '';
-            document.getElementById('doctorLogin').value = doctor.login || '';
-            document.getElementById('doctorPassword').value = '';
-            document.getElementById('doctorIsAdmin').checked = doctor.isAdmin || false;
-            document.getElementById('doctorModal').style.display = 'block';
-        };
-
-        window.deleteDoctor = function(id) {
-            console.log('Удаляем врача с ID:', id);
-            if (confirm('Вы уверены, что хотите удалить этого врача?')) {
-                doctors = doctors.filter(d => d.id !== id);
-                loadDoctors();
-            }
-        };
-
-        // Проверка авторизации
-        function checkAuth() {
-            const userRole = localStorage.getItem('userRole');
-            if (!userRole) {
-                window.location.href = '/login.html';
-                return false;
-            }
-            return true;
         }
 
-        // Загружаем данные при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, проверяем авторизацию...');
-            
-            if (!checkAuth()) {
+        function renderFilters() {
+            const types = [...new Set(services.map(s => s.type).filter(Boolean))];
+            const filterBar = document.getElementById('filterBar');
+
+            filterBar.innerHTML = `<button class="filter-btn ${!activeFilter ? 'active' : ''}" onclick="setFilter(null)">Все</button>` +
+                types.map(t => `<button class="filter-btn ${activeFilter === t ? 'active' : ''}" onclick="setFilter('${t}')">${t}</button>`).join('');
+        }
+
+        function setFilter(type) {
+            activeFilter = type;
+            renderFilters();
+            render();
+        }
+
+        function render() {
+            const grid = document.getElementById('servicesGrid');
+            const filtered = activeFilter ? services.filter(s => s.type === activeFilter) : services;
+
+            if (!filtered.length) {
+                EmptyState.show(grid, '⚙️', 'Нет услуг');
                 return;
             }
-            
-            console.log('Авторизация успешна, инициализируем страницу настроек');
-            loadServices();
-            setupForm();
+
+            grid.innerHTML = filtered.map(s => `
+                <div class="service-card">
+                    <div class="service-type">${s.type || 'Без категории'}</div>
+                    <div class="service-name">${s.name}</div>
+                    <div class="service-notes">${s.notes || '-'}</div>
+                    <div class="service-actions">
+                        <button class="btn btn-sm btn-warning" onclick="edit(${s.id})">✏️</button>
+                        <button class="btn btn-sm btn-danger" onclick="remove(${s.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openModal(service = null) {
+            editingId = service?.id || null;
+            document.getElementById('modalTitle').textContent = service ? 'Редактировать услугу' : 'Добавить услугу';
+            document.getElementById('form').reset();
+
+            if (service) {
+                document.getElementById('name').value = service.name || '';
+                document.getElementById('type').value = service.type || '';
+                document.getElementById('notes').value = service.notes || '';
+            }
+
+            Modal.open('modal');
+        }
+
+        function closeModal() {
+            Modal.close('modal');
+            editingId = null;
+        }
+
+        function edit(id) {
+            const service = services.find(s => s.id === id);
+            if (service) openModal(service);
+        }
+
+        async function remove(id) {
+            if (!confirm('Удалить услугу?')) return;
+
+            try {
+                await API.delete(`/api/services/${id}`);
+                Toast.success('Услуга удалена');
+                loadData();
+            } catch (error) {
+                Toast.error('Ошибка удаления');
+            }
+        }
+
+        async function save(e) {
+            e.preventDefault();
+
+            const data = {
+                name: document.getElementById('name').value,
+                type: document.getElementById('type').value,
+                notes: document.getElementById('notes').value
+            };
+
+            try {
+                if (editingId) {
+                    await API.put(`/api/services/${editingId}`, data);
+                    Toast.success('Услуга обновлена');
+                } else {
+                    await API.post('/api/services', data);
+                    Toast.success('Услуга добавлена');
+                }
+                closeModal();
+                loadData();
+            } catch (error) {
+                Toast.error('Ошибка сохранения');
+            }
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            document.getElementById('form').addEventListener('submit', save);
+            Modal.setupClickOutside('modal');
         });
-
-        async function loadServices() {
-            try {
-                console.log('Загружаем услуги с сервера...');
-                const response = await fetch('/api/services');
-                if (!response.ok) throw new Error('Ошибка загрузки услуг');
-                
-                const respJson = await response.json();
-                services = Array.isArray(respJson) ? respJson : (respJson.data || []);
-                console.log('Услуги загружены:', services);
-                
-                if (currentView === 'card') {
-                    loadServicesCards();
-                } else {
-                    loadServicesTable();
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки услуг:', error);
-                showNotification('Ошибка загрузки услуг', 'error');
-            }
-        }
-
-        function loadServicesCards() {
-            const grid = document.getElementById('servicesGrid');
-            grid.innerHTML = '';
-
-            const filteredServices = currentCategory ? 
-                services.filter(s => s.type === currentCategory) : 
-                services;
-
-            filteredServices.forEach(service => {
-                const card = document.createElement('div');
-                card.className = 'service-card';
-                card.innerHTML = `
-                    <div class="service-category">${service.type || 'Без типа'}</div>
-                    <div class="service-name">${service.name}</div>
-                    <div class="service-description">${service.notes || 'Нет примечаний'}</div>
-                    <div class="service-actions">
-                        <button class="btn btn-view" onclick="viewService(${service.id})">👁</button>
-                        <button class="btn btn-edit" onclick="editService(${service.id})">✏️</button>
-                        <button class="btn btn-delete" onclick="deleteService(${service.id})">🗑️</button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function loadServicesTable() {
-            const tbody = document.getElementById('servicesTableBody');
-            tbody.innerHTML = '';
-
-            const filteredServices = currentCategory ? 
-                services.filter(s => s.type === currentCategory) : 
-                services;
-
-            filteredServices.forEach(service => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${service.id}</td>
-                    <td>${service.name}</td>
-                    <td>${service.type || '-'}</td>
-                    <td>${service.notes || '-'}</td>
-                    <td>
-                        <div class="service-actions">
-                            <button class="btn btn-view" onclick="viewService(${service.id})">👁</button>
-                            <button class="btn btn-edit" onclick="editService(${service.id})">✏️</button>
-                            <button class="btn btn-delete" onclick="deleteService(${service.id})">🗑️</button>
-                        </div>
-                    </td>
-                `;
-            });
-        }
-
-        // Функции для работы с врачами
-        async function loadDoctors() {
-            try {
-                console.log('Загружаем врачей (localStorage)...');
-                const stored = localStorage.getItem('doctors');
-                if (stored) {
-                    doctors = JSON.parse(stored);
-                } else {
-                    // Стартовые данные по умолчанию
-                    doctors = [
-                        { id: 1, name: "Др. Иванов И.И.", email: "ivanov@clinic.com", login: "dr_ivanov", password: "" },
-                        { id: 2, name: "Др. Петрова А.С.", email: "petrova@clinic.com", login: "dr_petrova", password: "" },
-                        { id: 3, name: "Др. Сидоров П.А.", email: "sidorov@clinic.com", login: "dr_sidorov", password: "" }
-                    ];
-                    localStorage.setItem('doctors', JSON.stringify(doctors));
-                }
-                console.log('Врачи загружены:', doctors);
-                loadDoctorsCards();
-            } catch (error) {
-                console.error('Ошибка загрузки врачей:', error);
-                showNotification('Ошибка загрузки врачей', 'error');
-            }
-        }
-
-        function loadDoctorsCards() {
-            const grid = document.getElementById('doctorsGrid');
-            grid.innerHTML = '';
-
-            doctors.forEach(doctor => {
-                const card = document.createElement('div');
-                card.className = 'service-card';
-                const adminBadge = doctor.isAdmin ? '<span style="display: inline-block; background: #28a745; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 10px;">👑 Администратор</span>' : '';
-                card.innerHTML = `
-                    <div class="service-category">Врач</div>
-                    <div class="service-name">${doctor.name}${adminBadge}</div>
-                    <div class="service-description">${doctor.email || 'Email не указан'}</div>
-                    <div class="service-actions">
-                        <button class="btn btn-edit" onclick="editDoctor(${doctor.id})">✏️</button>
-                        <button class="btn btn-delete" onclick="deleteDoctor(${doctor.id})">🗑️</button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        window.saveDoctor = async function() {
-            const formData = {
-                name: document.getElementById('doctorName').value,
-                email: document.getElementById('doctorEmail').value,
-                login: document.getElementById('doctorLogin').value,
-                password: document.getElementById('doctorPassword').value,
-                isAdmin: document.getElementById('doctorIsAdmin').checked
-            };
-
-            try {
-                if (currentEditingId) {
-                    // Редактирование существующего врача
-                    const doctorIndex = doctors.findIndex(d => d.id === currentEditingId);
-                    if (doctorIndex !== -1) {
-                        doctors[doctorIndex] = { ...doctors[doctorIndex], ...formData };
-                        showNotification('Врач обновлен успешно', 'success');
-                    }
-                } else {
-                    // Добавление нового врача
-                    const newDoctor = {
-                        id: Math.max(...doctors.map(d => d.id), 0) + 1,
-                        ...formData
-                    };
-                    doctors.push(newDoctor);
-                    showNotification('Врач добавлен успешно', 'success');
-                }
-                // Сохраняем в localStorage
-                localStorage.setItem('doctors', JSON.stringify(doctors));
-                loadDoctors();
-                closeDoctorModal();
-                
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showNotification('Ошибка сохранения врача', 'error');
-            }
-        }
-
-        function switchView(view) {
-            currentView = view;
-            
-            if (view === 'card') {
-                document.getElementById('cardView').style.display = 'block';
-                document.getElementById('tableView').style.display = 'none';
-                document.getElementById('cardViewBtn').classList.add('active');
-                document.getElementById('tableViewBtn').classList.remove('active');
-            } else {
-                document.getElementById('cardView').style.display = 'none';
-                document.getElementById('tableView').style.display = 'block';
-                document.getElementById('tableViewBtn').classList.add('active');
-                document.getElementById('cardViewBtn').classList.remove('active');
-            }
-            
-            loadServices();
-        }
-
-        function filterByCategory() {
-            currentCategory = document.getElementById('categoryFilter').value;
-            loadServices();
-        }
-
-        function setupForm() {
-            const serviceForm = document.getElementById('serviceForm');
-            if (serviceForm) {
-                serviceForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    saveService();
-                });
-            }
-
-            const doctorForm = document.getElementById('doctorForm');
-            if (doctorForm) {
-                doctorForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    saveDoctor();
-                });
-            }
-        }
-
-        function openAddServiceModal() {
-            currentEditingId = null;
-            document.getElementById('modalTitle').textContent = 'Добавить услугу';
-            document.getElementById('serviceForm').reset();
-            document.getElementById('serviceModal').style.display = 'block';
-        }
-
-        function editService(id) {
-            const service = services.find(s => s.id === id);
-            if (!service) return;
-
-            currentEditingId = id;
-            document.getElementById('modalTitle').textContent = 'Редактировать услугу';
-            document.getElementById('serviceName').value = service.name;
-            document.getElementById('serviceType').value = service.type;
-            document.getElementById('serviceNotes').value = service.notes;
-            document.getElementById('serviceModal').style.display = 'block';
-        }
-
-        function viewService(id) {
-            const service = services.find(s => s.id === id);
-            if (!service) return;
-
-            alert(`Услуга: ${service.name}\nТип: ${service.type || '-'}\nПримечания: ${service.notes || '-'}`);
-        }
-
-        window.deleteService = async function(id) {
-            if (confirm('Вы уверены, что хотите удалить эту услугу?')) {
-                try {
-                    const response = await fetch(`/api/services/${id}`, {
-                        method: 'DELETE'
-                    });
-
-                    if (!response.ok) throw new Error('Ошибка удаления услуги');
-                    
-                    const result = await response.json();
-                    showNotification(result.message, 'success');
-                    await loadServices();
-                    
-                } catch (error) {
-                    console.error('Ошибка:', error);
-                    showNotification('Ошибка удаления услуги', 'error');
-                }
-            }
-        }
-
-        window.saveService = async function() {
-            const formData = {
-                name: document.getElementById('serviceName').value,
-                type: document.getElementById('serviceType').value,
-                notes: document.getElementById('serviceNotes').value
-            };
-
-            try {
-                if (currentEditingId) {
-                    // Редактирование существующей услуги
-                    const response = await fetch(`/api/services/${currentEditingId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(formData)
-                    });
-
-                    if (!response.ok) throw new Error('Ошибка обновления услуги');
-                    
-                    const result = await response.json();
-                    showNotification(result.message, 'success');
-                } else {
-                    // Добавление новой услуги
-                    const response = await fetch('/api/services', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(formData)
-                    });
-
-                    if (!response.ok) throw new Error('Ошибка добавления услуги');
-                    
-                    const result = await response.json();
-                    showNotification(result.message, 'success');
-                }
-
-                await loadServices();
-                closeServiceModal();
-                
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showNotification('Ошибка сохранения услуги', 'error');
-            }
-        }
-
-        window.closeServiceModal = function() {
-            console.log('Закрываем модальное окно услуги');
-            const modal = document.getElementById('serviceModal');
-            if (modal) {
-                modal.style.display = 'none';
-                console.log('Модальное окно услуги скрыто');
-            } else {
-                console.error('Модальное окно услуги не найдено!');
-            }
-            document.getElementById('serviceForm').reset();
-            currentEditingId = null;
-        }
-
-        function getCategoryName(category) {
-            const categoryMap = {
-                'diagnosis': 'Диагностика',
-                'treatment': 'Лечение',
-                'prosthetics': 'Протезирование',
-                'surgery': 'Хирургия',
-                'cosmetic': 'Косметология',
-                'prevention': 'Профилактика'
-            };
-            return categoryMap[category] || category;
-        }
-
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 20px;
-                border-radius: 5px;
-                color: white;
-                font-weight: bold;
-                z-index: 10000;
-                max-width: 300px;
-                word-wrap: break-word;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                transition: all 0.3s ease;
-            `;
-            
-            if (type === 'success') {
-                notification.style.backgroundColor = '#28a745';
-            } else if (type === 'error') {
-                notification.style.backgroundColor = '#dc3545';
-            } else {
-                notification.style.backgroundColor = '#007bff';
-            }
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        // Закрытие модального окна при клике вне его
-        window.onclick = function(event) {
-            const serviceModal = document.getElementById('serviceModal');
-            const doctorModal = document.getElementById('doctorModal');
-            
-            if (event.target === serviceModal) {
-                closeServiceModal();
-            } else if (event.target === doctorModal) {
-                closeDoctorModal();
-            }
-        }
     </script>
 </body>
 </html>

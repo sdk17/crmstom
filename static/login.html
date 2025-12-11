@@ -3,185 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход в систему - CRM Стоматология</title>
+    <title>Вход - CRM Стоматология</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+    <link rel="stylesheet" href="/static/css/common.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
-        .login-container {
+        .login-card {
             background: white;
             padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
         }
         .login-header {
             text-align: center;
             margin-bottom: 30px;
         }
+        .login-header .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
         .login-header h1 {
-            color: #333;
             margin: 0;
-            font-size: 28px;
+            font-size: 24px;
+            color: #333;
         }
         .login-header p {
+            margin: 8px 0 0;
             color: #666;
-            margin: 10px 0 0 0;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: bold;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .login-btn:hover {
-            transform: translateY(-2px);
-        }
-        .login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
+            font-size: 14px;
         }
         .error-message {
             background: #f8d7da;
             color: #721c24;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 6px;
             margin-bottom: 20px;
+            font-size: 14px;
             display: none;
         }
         .demo-credentials {
-            background: #d1ecf1;
-            color: #0c5460;
+            background: #e7f3ff;
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 6px;
             margin-top: 20px;
-            font-size: 14px;
+            font-size: 13px;
         }
-        .demo-credentials h4 {
-            margin: 0 0 10px 0;
+        .demo-credentials strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #0056b3;
         }
-        .demo-credentials p {
-            margin: 5px 0;
+        .demo-credentials code {
+            background: #d1e7fd;
+            padding: 2px 6px;
+            border-radius: 3px;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <div class="login-card">
         <div class="login-header">
-            <h1>🦷 CRM Стоматология</h1>
+            <div class="icon">🦷</div>
+            <h1>CRM Стоматология</h1>
             <p>Войдите в систему</p>
         </div>
 
-        <div id="errorMessage" class="error-message"></div>
+        <div id="error" class="error-message"></div>
 
         <form id="loginForm">
             <div class="form-group">
-                <label for="username">Логин</label>
-                <input type="text" id="username" name="username" required>
+                <label for="login">Логин</label>
+                <input type="text" id="login" placeholder="Введите логин" required autofocus>
             </div>
             <div class="form-group">
                 <label for="password">Пароль</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" placeholder="Введите пароль" required>
             </div>
-            <button type="submit" class="login-btn" id="loginBtn">Войти</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">
+                Войти
+            </button>
         </form>
 
         <div class="demo-credentials">
-            <h4>Демо-доступы:</h4>
-            <p><strong>Администратор:</strong> admin / admin</p>
-            <p><strong>Врачи:</strong> создайте в разделе "Настройки"</p>
-            <p style="font-size: 12px; color: #6c757d; margin-top: 10px;">💡 Врачи с галочкой "Администратор" получат полный доступ</p>
+            <strong>Тестовые данные:</strong>
+            Логин: <code>admin</code> Пароль: <code>admin</code>
         </div>
     </div>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const loginBtn = document.getElementById('loginBtn');
-            const errorMessage = document.getElementById('errorMessage');
-            
-            // Показываем индикатор загрузки
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'Вход...';
-            errorMessage.style.display = 'none';
-            
-            try {
-                // Простая проверка логина/пароля
-                if (username === 'admin' && password === 'admin') {
-                    // Администратор
-                    localStorage.setItem('userRole', 'admin');
-                    localStorage.setItem('username', 'admin');
-                    localStorage.setItem('userDisplayName', 'Администратор');
-                    window.location.href = '/';
-                } else {
-                    // Проверяем среди врачей из localStorage
-                    const stored = localStorage.getItem('doctors');
-                    const docs = stored ? JSON.parse(stored) : [];
-                    const found = docs.find(d => d.login === username);
-                    if (found && (found.password === password || (!found.password && password === ''))) {
-                        // Если врач имеет флаг isAdmin, даем роль admin
-                        const role = found.isAdmin ? 'admin' : 'doctor';
-                        localStorage.setItem('userRole', role);
-                        localStorage.setItem('username', found.login || found.name);
-                        localStorage.setItem('userDisplayName', found.name);
-                        window.location.href = '/';
-                    } else {
-                        throw new Error('Неверный логин или пароль');
-                    }
-                }
-            } catch (error) {
-                errorMessage.textContent = error.message;
-                errorMessage.style.display = 'block';
-            } finally {
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Войти';
-            }
-        });
+    <div id="toast"></div>
 
-        // Проверяем, если пользователь уже авторизован
+    <script src="/static/js/common.js"></script>
+    <script>
+        // Redirect if already logged in
         if (localStorage.getItem('userRole')) {
             window.location.href = '/';
         }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('error');
+
+            errorEl.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ login, password })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Ошибка авторизации');
+                }
+
+                // Save to localStorage
+                const doctor = result.data;
+                localStorage.setItem('userRole', doctor.isAdmin ? 'admin' : 'doctor');
+                localStorage.setItem('userDisplayName', doctor.name);
+                localStorage.setItem('userId', doctor.id);
+
+                Toast.success('Добро пожаловать!');
+                setTimeout(() => window.location.href = '/', 500);
+
+            } catch (error) {
+                errorEl.textContent = error.message;
+                errorEl.style.display = 'block';
+            }
+        });
     </script>
 </body>
 </html>

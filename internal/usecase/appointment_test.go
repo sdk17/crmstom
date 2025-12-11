@@ -312,6 +312,30 @@ func TestAppointmentUseCase_UpdateAppointment(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "success with price and duration",
+			appointment: &domain.Appointment{
+				ID:        1,
+				PatientID: 1,
+				Date:      futureDate,
+				Time:      "14:00",
+				Service:   "Лечение",
+				Status:    domain.StatusScheduled,
+				Price:     15000.00,
+				Duration:  60,
+			},
+			setup: func(a *repository.MockAppointmentRepository, p *repository.MockPatientRepository, s *repository.MockServiceRepository) {
+				p.EXPECT().GetByID(1).Return(&domain.Patient{ID: 1, Name: "Jane Doe"}, nil)
+				a.EXPECT().CheckTimeConflict(futureDate, "14:00", 1).Return(false, nil)
+				a.EXPECT().Update(gomock.Any()).DoAndReturn(func(apt *domain.Appointment) error {
+					assert.Equal(t, 15000.00, apt.Price)
+					assert.Equal(t, 60, apt.Duration)
+					assert.Equal(t, "Jane Doe", apt.PatientName)
+					return nil
+				})
+			},
+			wantErr: false,
+		},
+		{
 			name: "time conflict",
 			appointment: &domain.Appointment{
 				ID:        1,

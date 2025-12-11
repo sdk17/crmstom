@@ -10,6 +10,7 @@ ON CONFLICT DO NOTHING;
 
 -- Test doctors
 INSERT INTO doctors (name, email, login, password, is_admin) VALUES
+('Администратор', 'admin@clinic.com', 'admin', 'admin', true),
 ('Др. Смит', 'smith@clinic.com', 'dr_smith', 'password123', false),
 ('Др. Джонс', 'jones@clinic.com', 'dr_jones', 'password123', false),
 ('Др. Уилсон', 'wilson@clinic.com', 'dr_wilson', 'password123', true)

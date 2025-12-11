@@ -4,620 +4,232 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Пациенты - CRM Стоматология</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .nav {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .nav a {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 0 10px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .nav a:hover {
-            background-color: #0056b3;
-        }
-        .add-patient {
-            background-color: #28a745;
-            margin-bottom: 20px;
-        }
-        .add-patient:hover {
-            background-color: #218838;
-        }
-        .quick-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        .stat-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #e9ecef;
-        }
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #007bff;
-            margin-bottom: 5px;
-        }
-        .stat-label {
-            font-size: 0.9rem;
-            color: #666;
-        }
-        .search-box {
-            margin: 20px 0;
-            text-align: center;
-        }
-        .search-box input {
-            padding: 10px;
-            width: 300px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        .patients-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .patients-table th,
-        .patients-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .patients-table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-            color: #333;
-        }
-        .patients-table tr:hover {
-            background-color: #f5f5f5;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .btn {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .btn-edit {
-            background-color: #ffc107;
-            color: #000;
-        }
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-view {
-            background-color: #17a2b8;
-            color: white;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 500px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .form-actions {
-            text-align: right;
-            margin-top: 20px;
-        }
-        .form-actions button {
-            padding: 10px 20px;
-            margin-left: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn-save {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-cancel {
-            background-color: #6c757d;
-            color: white;
-        }
-    </style>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+    <link rel="stylesheet" href="/static/css/common.css">
 </head>
 <body>
     <div class="container">
-        <h1>👥 Управление пациентами</h1>
-        
+        <h1>👥 Пациенты</h1>
+
         <div class="nav">
             <a href="/">🏠 Главная</a>
-            <a href="/patients.html">👥 Пациенты</a>
+            <a href="/patients.html" class="active">👥 Пациенты</a>
             <a href="/appointments.html">📅 Записи</a>
-            <a href="/services.html">⚙️ Настройки</a>
+            <a href="/doctors.html">👨‍⚕️ Врачи</a>
+            <a href="/services.html">⚙️ Услуги</a>
             <a href="/reports.html">📊 Отчёты</a>
         </div>
 
-        <!-- Быстрая статистика -->
-        <div class="quick-stats">
+        <div class="quick-stats" id="statsContainer">
             <div class="stat-item">
-                <div class="stat-number" id="totalPatientsCount">3</div>
-                <div class="stat-label">Всего пациентов</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="newPatientsCount">0</div>
-                <div class="stat-label">Новых за месяц</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="activePatientsCount">3</div>
-                <div class="stat-label">Активных</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="avgAgeCount">35</div>
-                <div class="stat-label">Средний возраст</div>
+                <div class="stat-number" id="totalCount">-</div>
+                <div class="stat-label">Всего</div>
             </div>
         </div>
 
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Поиск пациентов по имени, телефону или email...">
+            <input type="text" id="searchInput" placeholder="Поиск по имени, телефону или email...">
         </div>
 
-        <button class="nav add-patient" onclick="openAddPatientModal()">
-            ➕ Добавить пациента
-        </button>
-        
-        <button class="nav" onclick="testFunction()" style="background: #28a745; margin-left: 10px;">
-            🧪 Тест
-        </button>
-        
-        <button class="nav" onclick="testModalClose()" style="background: #ffc107; margin-left: 10px;">
-            🔧 Тест модалки
-        </button>
-        
-        <button class="nav" onclick="testSavePatient()" style="background: #dc3545; margin-left: 10px;">
-            💾 Тест сохранения
-        </button>
+        <div style="margin-bottom: 20px;">
+            <button class="btn btn-success" onclick="openModal()">➕ Добавить пациента</button>
+        </div>
 
-        <table class="patients-table" id="patientsTable">
+        <table class="data-table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>ФИО</th>
                     <th>Телефон</th>
                     <th>Email</th>
                     <th>Дата рождения</th>
-                    <th>Последний визит</th>
                     <th>Действия</th>
                 </tr>
             </thead>
-            <tbody id="patientsTableBody">
-                <!-- Данные будут загружены через JavaScript -->
-            </tbody>
+            <tbody id="tableBody"></tbody>
         </table>
     </div>
 
-    <!-- Модальное окно для добавления/редактирования пациента -->
-    <div id="patientModal" class="modal">
+    <!-- Modal -->
+    <div id="modal" class="modal">
         <div class="modal-content">
             <h2 id="modalTitle">Добавить пациента</h2>
-            <form id="patientForm">
+            <form id="form">
                 <div class="form-group">
-                    <label for="patientName">ФИО *</label>
-                    <input type="text" id="patientName" required>
+                    <label for="name">ФИО *</label>
+                    <input type="text" id="name" required>
                 </div>
                 <div class="form-group">
-                    <label for="patientPhone">Телефон</label>
-                    <input type="tel" id="patientPhone">
+                    <label for="phone">Телефон</label>
+                    <input type="tel" id="phone">
                 </div>
                 <div class="form-group">
-                    <label for="patientEmail">Email</label>
-                    <input type="email" id="patientEmail">
+                    <label for="email">Email</label>
+                    <input type="email" id="email">
                 </div>
                 <div class="form-group">
-                    <label for="patientBirthDate">Дата рождения</label>
-                    <input type="date" id="patientBirthDate">
+                    <label for="birthDate">Дата рождения</label>
+                    <input type="date" id="birthDate">
                 </div>
                 <div class="form-group">
-                    <label for="patientAddress">Адрес</label>
-                    <input type="text" id="patientAddress">
+                    <label for="address">Адрес</label>
+                    <input type="text" id="address">
                 </div>
                 <div class="form-group">
-                    <label for="patientNotes">Примечания</label>
-                    <input type="text" id="patientNotes">
+                    <label for="notes">Примечания</label>
+                    <textarea id="notes" rows="3"></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closePatientModal()">Отмена</button>
-                    <button type="submit" class="btn-save">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                    <button type="submit" class="btn btn-success">Сохранить</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <div id="toast"></div>
+
+    <script src="/static/js/common.js"></script>
     <script>
-        // Временные данные пациентов (в реальном проекте это будет API)
-        let patients = [
-            {
-                id: 1,
-                name: "Иванов Иван Иванович",
-                phone: "+7 (777) 123-45-67",
-                email: "ivanov@example.com",
-                birthDate: "1985-03-15",
-                address: "г. Алматы, ул. Абая, 150",
-                notes: "Аллергия на пенициллин",
-                lastVisit: "2025-01-15"
-            },
-            {
-                id: 2,
-                name: "Петрова Анна Сергеевна",
-                phone: "+7 (777) 234-56-78",
-                email: "petrova@example.com",
-                birthDate: "1990-07-22",
-                address: "г. Алматы, ул. Достык, 45",
-                notes: "Беременность - 2 триместр",
-                lastVisit: "2025-01-18"
-            },
-            {
-                id: 3,
-                name: "Сидоров Петр Александрович",
-                phone: "+7 (777) 345-67-89",
-                email: "sidorov@example.com",
-                birthDate: "1978-11-08",
-                address: "г. Алматы, ул. Сатпаева, 78",
-                notes: "Диабет 2 типа",
-                lastVisit: "2025-01-20"
-            }
-        ];
+        let patients = [];
+        let editingId = null;
 
-        let currentEditingId = null;
+        // Load patients
+        async function loadData() {
+            const tbody = document.getElementById('tableBody');
+            Loading.showInTable(tbody, 5);
 
-        // Глобальные функции для кнопок
-        window.openAddPatientModal = function() {
-            console.log('Открываем модальное окно добавления пациента');
-            currentEditingId = null;
-            document.getElementById('modalTitle').textContent = 'Добавить пациента';
-            document.getElementById('patientForm').reset();
-            document.getElementById('patientModal').style.display = 'block';
-        };
-
-        // Удаляем дублирующее определение closePatientModal
-
-        window.editPatient = function(id) {
-            console.log('Редактируем пациента с ID:', id);
-            const patient = patients.find(p => p.id === id);
-            if (!patient) return;
-
-            currentEditingId = id;
-            document.getElementById('modalTitle').textContent = 'Редактировать пациента';
-            document.getElementById('patientName').value = patient.name;
-            document.getElementById('patientPhone').value = patient.phone || '';
-            document.getElementById('patientEmail').value = patient.email || '';
-            document.getElementById('patientBirthDate').value = patient.birth_date || '';
-            document.getElementById('patientAddress').value = patient.address || '';
-            document.getElementById('patientNotes').value = patient.notes || '';
-            document.getElementById('patientModal').style.display = 'block';
-        };
-
-        window.viewPatient = function(id) {
-            console.log('Просматриваем пациента с ID:', id);
-            const patient = patients.find(p => p.id === id);
-            if (!patient) return;
-
-            alert(`Пациент: ${patient.name}\nТелефон: ${patient.phone || 'не указан'}\nEmail: ${patient.email || 'не указан'}\nДата рождения: ${formatDate(patient.birth_date)}\nАдрес: ${patient.address || 'не указан'}\nПримечания: ${patient.notes || 'нет'}\nПоследний визит: ${formatDate(patient.last_visit)}`);
-        };
-
-        window.deletePatient = async function(id) {
-            console.log('Удаляем пациента с ID:', id);
-            if (confirm('Вы уверены, что хотите удалить этого пациента?')) {
-                try {
-                    const response = await fetch(`/api/patients/${id}`, {
-                        method: 'DELETE'
-                    });
-
-                    if (!response.ok) throw new Error('Ошибка удаления пациента');
-                    
-                    const result = await response.json();
-                    showNotification(result.message, 'success');
-                    await loadPatients();
-                    
-                    // Показываем уведомление об успешном обновлении
-                    showNotification('Данные обновлены!', 'success');
-                    
-                } catch (error) {
-                    console.error('Ошибка:', error);
-                    showNotification('Ошибка удаления пациента', 'error');
-                }
-            }
-        };
-
-        // Загружаем данные при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, инициализируем страницу пациентов');
-            loadPatients();
-            setupSearch();
-            setupForm();
-        });
-
-        async function loadPatients() {
             try {
-                console.log('Начинаем загрузку пациентов...');
-                // Показываем индикатор загрузки
-                const tbody = document.getElementById('patientsTableBody');
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">🔄 Обновление данных...</td></tr>';
-                
-                const response = await fetch('/api/patients');
-                if (!response.ok) throw new Error('Ошибка загрузки данных');
-                
-                patients = await response.json();
-                console.log('Получено пациентов:', patients.length);
-                displayPatients();
-                console.log('Пациенты отображены в таблице');
-                
+                patients = await API.get('/api/patients');
+                render();
+                document.getElementById('totalCount').textContent = patients.length;
             } catch (error) {
-                console.error('Ошибка:', error);
-                showNotification('Ошибка загрузки данных', 'error');
+                console.error('Error:', error);
+                Toast.error('Ошибка загрузки данных');
             }
         }
 
-        function displayPatients() {
-            console.log('Отображаем пациентов в таблице...');
-            const tbody = document.getElementById('patientsTableBody');
-            if (!tbody) {
-                console.error('Элемент patientsTableBody не найден!');
+        // Render table
+        function render(data = patients) {
+            const tbody = document.getElementById('tableBody');
+
+            if (!data || data.length === 0) {
+                EmptyState.showInTable(tbody, 5, '👥', 'Нет пациентов');
                 return;
             }
-            tbody.innerHTML = '';
 
-            patients.forEach(patient => {
-                console.log('Добавляем пациента:', patient.name);
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${patient.id}</td>
-                    <td>${patient.name}</td>
-                    <td>${patient.phone || '-'}</td>
-                    <td>${patient.email || '-'}</td>
-                    <td>${formatDate(patient.birth_date)}</td>
-                    <td>${formatDate(patient.last_visit)}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn btn-view" onclick="viewPatient(${patient.id})">👁</button>
-                            <button class="btn btn-edit" onclick="editPatient(${patient.id})">✏️</button>
-                            <button class="btn btn-delete" onclick="deletePatient(${patient.id})">🗑️</button>
-                        </div>
+            tbody.innerHTML = data.map(p => `
+                <tr>
+                    <td><strong>${p.name}</strong></td>
+                    <td>${Phone.format(p.phone) || '-'}</td>
+                    <td>${p.email || '-'}</td>
+                    <td>${DateUtils.format(p.birth_date)}</td>
+                    <td class="actions">
+                        <button class="btn btn-sm btn-warning" onclick="edit(${p.id})">✏️</button>
+                        <button class="btn btn-sm btn-danger" onclick="remove(${p.id})">🗑️</button>
                     </td>
-                `;
-            });
+                </tr>
+            `).join('');
         }
 
-        async function setupSearch() {
-            const searchInput = document.getElementById('searchInput');
-            searchInput.addEventListener('input', async function() {
-                const searchTerm = this.value;
-                
-                try {
-                    const response = await fetch(`/api/patients?query=${encodeURIComponent(searchTerm)}`);
-                    if (!response.ok) throw new Error('Ошибка поиска');
-                    
-                    const filteredPatients = await response.json();
-                    displayFilteredPatients(filteredPatients);
-                    
-                } catch (error) {
-                    console.error('Ошибка поиска:', error);
-                    showNotification('Ошибка поиска', 'error');
-                }
-            });
-        }
+        // Search
+        async function search(query) {
+            if (!query.trim()) {
+                render();
+                return;
+            }
 
-        function displayFilteredPatients(filteredPatients) {
-            const tbody = document.getElementById('patientsTableBody');
-            tbody.innerHTML = '';
-
-            filteredPatients.forEach(patient => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${patient.id}</td>
-                    <td>${patient.name}</td>
-                    <td>${patient.phone || '-'}</td>
-                    <td>${patient.email || '-'}</td>
-                    <td>${formatDate(patient.birth_date)}</td>
-                    <td>${formatDate(patient.last_visit)}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn btn-view" onclick="viewPatient(${patient.id})">👁</button>
-                            <button class="btn btn-edit" onclick="editPatient(${patient.id})">✏️</button>
-                            <button class="btn btn-delete" onclick="deletePatient(${patient.id})">🗑️</button>
-                        </div>
-                    </td>
-                `;
-            });
-        }
-
-        function setupForm() {
-            const form = document.getElementById('patientForm');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    console.log('Форма отправлена, вызываем savePatient...');
-                    savePatient();
-                });
-                console.log('Форма настроена успешно');
-            } else {
-                console.error('Форма с id patientForm не найдена!');
+            try {
+                const results = await API.get(`/api/patients?query=${encodeURIComponent(query)}`);
+                render(results);
+            } catch (error) {
+                Toast.error('Ошибка поиска');
             }
         }
 
-        // Тестовая функция
-        window.testFunction = function() {
-            console.log('Тестовая функция вызвана!');
-            showNotification('Тест работает!', 'success');
-            loadPatients();
-        };
+        // Open modal
+        function openModal(patient = null) {
+            editingId = patient?.id || null;
+            document.getElementById('modalTitle').textContent = patient ? 'Редактировать пациента' : 'Добавить пациента';
+            document.getElementById('form').reset();
 
-        // Тест закрытия модального окна
-        window.testModalClose = function() {
-            console.log('Тестируем закрытие модального окна...');
-            openAddPatientModal();
-            setTimeout(() => {
-                console.log('Закрываем модальное окно через 2 секунды...');
-                closePatientModal();
-                showNotification('Модальное окно должно было закрыться!', 'success');
-            }, 2000);
-        };
+            if (patient) {
+                document.getElementById('name').value = patient.name || '';
+                document.getElementById('phone').value = patient.phone || '';
+                document.getElementById('email').value = patient.email || '';
+                document.getElementById('birthDate').value = DateUtils.toInputFormat(patient.birth_date);
+                document.getElementById('address').value = patient.address || '';
+                document.getElementById('notes').value = patient.notes || '';
+            }
 
-        // Тест сохранения пациента
-        window.testSavePatient = function() {
-            console.log('Тестируем сохранение пациента...');
-            openAddPatientModal();
-            
-            // Заполняем форму тестовыми данными
-            setTimeout(() => {
-                document.getElementById('patientName').value = 'Тестовый Пациент';
-                document.getElementById('patientPhone').value = '+7 (777) 999-99-99';
-                document.getElementById('patientEmail').value = 'test@example.com';
-                
-                console.log('Форма заполнена, вызываем savePatient...');
-                savePatient();
-            }, 1000);
-        };
+            Modal.open('modal');
+        }
 
-        // Эти функции уже определены выше как глобальные
+        function closeModal() {
+            Modal.close('modal');
+            editingId = null;
+        }
 
-        window.savePatient = async function() {
-            const formData = {
-                name: document.getElementById('patientName').value,
-                phone: document.getElementById('patientPhone').value || '',
-                email: document.getElementById('patientEmail').value || '',
-                birth_date: document.getElementById('patientBirthDate').value || '',
-                address: document.getElementById('patientAddress').value || '',
-                notes: document.getElementById('patientNotes').value || ''
+        // Edit
+        function edit(id) {
+            const patient = patients.find(p => p.id === id);
+            if (patient) openModal(patient);
+        }
+
+        // Delete
+        async function remove(id) {
+            if (!confirm('Удалить пациента?')) return;
+
+            try {
+                await API.delete(`/api/patients/${id}`);
+                Toast.success('Пациент удален');
+                loadData();
+            } catch (error) {
+                Toast.error('Ошибка удаления');
+            }
+        }
+
+        // Save
+        async function save(e) {
+            e.preventDefault();
+
+            const data = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                birth_date: document.getElementById('birthDate').value,
+                address: document.getElementById('address').value,
+                notes: document.getElementById('notes').value
             };
 
             try {
-                if (currentEditingId) {
-                    // Редактирование существующего пациента
-                    const response = await fetch(`/api/patients/${currentEditingId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(formData)
-                    });
-
-                    if (!response.ok) throw new Error('Ошибка обновления пациента');
-                    
-                    const result = await response.json();
-                    showNotification(result.message, 'success');
+                if (editingId) {
+                    await API.put(`/api/patients/${editingId}`, data);
+                    Toast.success('Пациент обновлен');
                 } else {
-                    // Добавление нового пациента
-                    const response = await fetch('/api/patients', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(formData)
-                    });
-
-                    if (!response.ok) throw new Error('Ошибка добавления пациента');
-                    
-                    const result = await response.json();
-                    showNotification(result.message, 'success');
+                    await API.post('/api/patients', data);
+                    Toast.success('Пациент добавлен');
                 }
-
-                console.log('Перезагружаем данные пациентов...');
-                await loadPatients();
-                console.log('Данные пациентов перезагружены');
-                closePatientModal();
-                
+                closeModal();
+                loadData();
             } catch (error) {
-                console.error('Ошибка:', error);
-                showNotification('Ошибка сохранения пациента', 'error');
+                Toast.error('Ошибка сохранения');
             }
         }
 
-        window.closePatientModal = function() {
-            console.log('Закрываем модальное окно пациента');
-            const modal = document.getElementById('patientModal');
-            if (modal) {
-                modal.style.display = 'none';
-                console.log('Модальное окно скрыто');
-            } else {
-                console.error('Модальное окно не найдено!');
-            }
-            const form = document.getElementById('patientForm');
-            if (form) {
-                form.reset();
-                console.log('Форма сброшена');
-            } else {
-                console.error('Форма не найдена для сброса!');
-            }
-            currentEditingId = null;
-            console.log('Модальное окно пациента закрыто полностью');
-        }
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
 
-        function formatDate(dateString) {
-            if (!dateString) return '-';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('ru-RU');
-        }
+            document.getElementById('form').addEventListener('submit', save);
 
-        // Закрытие модального окна при клике вне его
-        window.onclick = function(event) {
-            const modal = document.getElementById('patientModal');
-            if (event.target === modal) {
-                closePatientModal();
-            }
-        }
+            let searchTimeout;
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => search(e.target.value), 300);
+            });
+
+            Modal.setupClickOutside('modal');
+        });
     </script>
 </body>
 </html>

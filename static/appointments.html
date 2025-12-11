@@ -3,1325 +3,413 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Записи на приём - CRM Стоматология</title>
+    <title>Записи - CRM Стоматология</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+    <link rel="stylesheet" href="/static/css/common.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .nav {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .nav a {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 0 10px;
-            background-color: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .nav a:hover {
-            background-color: #0056b3;
-        }
-        .add-appointment {
-            background-color: #28a745;
-            margin-bottom: 20px;
-        }
-        .add-appointment:hover {
-            background-color: #218838;
-        }
-        .quick-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        .stat-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #e9ecef;
-        }
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #007bff;
-            margin-bottom: 5px;
-        }
-        .stat-label {
-            font-size: 0.9rem;
-            color: #666;
-        }
-        .quick-actions-bar {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-        .quick-action-btn {
-            padding: 10px 15px;
-            border: 2px solid #007bff;
-            background: white;
-            color: #007bff;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-        .quick-action-btn:hover {
-            background: #007bff;
-            color: white;
-        }
-        .weekly-calendar {
-            display: grid;
-            grid-template-columns: 80px repeat(7, 1fr);
-            gap: 1px;
-            background-color: #ddd;
-            margin: 20px 0;
-            border-radius: 8px;
-            overflow: hidden;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        .time-slot {
-            background: #f8f9fa;
-            padding: 8px 5px;
-            text-align: center;
-            font-size: 12px;
-            font-weight: 600;
-            color: #495057;
-            border-right: 2px solid #dee2e6;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .day-header {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            padding: 15px 10px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 14px;
-            min-height: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .day-name {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-        .day-number {
-            font-size: 16px;
-            font-weight: bold;
-        }
-        .time-cell {
-            background: white;
-            min-height: 40px;
-            border: 1px solid #e9ecef;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .time-cell:hover {
-            background: #f8f9fa;
-        }
-        .time-cell.occupied {
-            background: #007bff;
-            color: white;
-            cursor: pointer;
-        }
-        .time-cell.occupied:hover {
-            background: #0056b3;
-        }
-        .time-cell.today {
-            background: #e3f2fd;
-            border-color: #007bff;
-        }
-        .appointment-popup {
-            background: #007bff;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            right: 2px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-        .week-navigation {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 20px 0;
-            padding: 0 20px;
-        }
-        .week-nav-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .week-nav-btn:hover {
-            background: #0056b3;
-        }
-        .week-nav-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-        }
-        .current-week {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-        }
-        .appointments-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .appointments-table th,
-        .appointments-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .appointments-table th {
-            background-color: #f8f9fa;
-            font-weight: bold;
-            color: #333;
-        }
-        .appointments-table tr:hover {
-            background-color: #f5f5f5;
-        }
-        .status-scheduled {
-            background-color: #17a2b8;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        .status-completed {
-            background-color: #28a745;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        .status-cancelled {
-            background-color: #dc3545;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .btn {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .btn-edit {
-            background-color: #ffc107;
-            color: #000;
-        }
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-complete {
-            background-color: #28a745;
-            color: white;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 600px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .form-group textarea {
-            height: 80px;
-            resize: vertical;
-        }
-        .form-actions {
-            text-align: right;
-            margin-top: 20px;
-        }
-        .form-actions button {
-            padding: 10px 20px;
-            margin-left: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn-save {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-cancel {
-            background-color: #6c757d;
-            color: white;
-        }
-        .view-toggle {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .view-toggle button {
-            padding: 10px 20px;
-            margin: 0 5px;
-            border: 1px solid #007bff;
-            background-color: white;
-            color: #007bff;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .view-toggle button.active {
-            background-color: #007bff;
-            color: white;
-        }
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            z-index: 1000;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-        }
-        .notification.show {
-            transform: translateX(0);
-        }
-        .notification.success {
-            background: linear-gradient(135deg, #28a745, #20c997);
-        }
-        .notification.error {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-        }
-        
-        /* Стили для календаря */
-        .weekly-calendar {
-            display: grid;
-            grid-template-columns: 80px repeat(7, 1fr);
-            gap: 1px;
-            background-color: #ddd;
-            border: 1px solid #ddd;
-            margin-top: 20px;
-        }
-        .time-slot {
-            background-color: #f8f9fa;
-            padding: 10px 5px;
-            text-align: center;
-            font-weight: bold;
-            border-bottom: 1px solid #ddd;
-        }
-        .day-header {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 5px;
-            text-align: center;
-            font-weight: bold;
-        }
-        .day-name {
-            font-size: 14px;
-        }
-        .day-number {
-            font-size: 18px;
-            margin-top: 5px;
-        }
-        .time-cell {
-            background-color: white;
-            border: 1px solid #ddd;
-            min-height: 40px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            position: relative;
-        }
-        .time-cell:hover {
-            background-color: #e3f2fd;
-        }
-        .time-cell.occupied {
-            background-color: #f5f5f5;
-            cursor: default;
-        }
-        .time-cell.today {
-            background-color: #fff3cd;
-        }
-        .appointment-popup {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #007bff;
-            color: white;
-            padding: 5px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            cursor: pointer;
-            border-radius: 3px;
-        }
+        .view-toggle { text-align: center; margin: 20px 0; }
+        .view-toggle button { padding: 10px 20px; margin: 0 5px; border: 1px solid #007bff; background: white; color: #007bff; border-radius: 4px; cursor: pointer; }
+        .view-toggle button.active { background: #007bff; color: white; }
+
+        .week-navigation { display: flex; justify-content: space-between; align-items: center; margin: 20px 0; }
+        .week-nav-btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .week-nav-btn:hover { background: #0056b3; }
+        .current-week { font-size: 18px; font-weight: 600; }
+
+        .weekly-calendar { display: grid; grid-template-columns: 70px repeat(7, 1fr); gap: 1px; background: #ddd; border-radius: 8px; overflow: hidden; }
+        .time-slot { background: #f8f9fa; padding: 8px; text-align: center; font-size: 12px; font-weight: 600; }
+        .day-header { background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 12px 8px; text-align: center; }
+        .day-name { font-size: 12px; opacity: 0.9; }
+        .day-number { font-size: 16px; font-weight: bold; }
+        .time-cell { background: white; min-height: 35px; cursor: pointer; position: relative; transition: background 0.2s; }
+        .time-cell:hover { background: #f0f7ff; }
+        .time-cell.today { background: #fff3cd; }
+        .appointment-chip { position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px; background: #007bff; color: white; padding: 2px 4px; border-radius: 3px; font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📅 Записи на приём</h1>
-        
+        <h1>📅 Записи</h1>
+
         <div class="nav">
             <a href="/">🏠 Главная</a>
             <a href="/patients.html">👥 Пациенты</a>
-            <a href="/appointments.html">📅 Записи</a>
-            <a href="/services.html">⚙️ Настройки</a>
+            <a href="/appointments.html" class="active">📅 Записи</a>
+            <a href="/doctors.html">👨‍⚕️ Врачи</a>
+            <a href="/services.html">⚙️ Услуги</a>
             <a href="/reports.html">📊 Отчёты</a>
         </div>
 
-        <!-- Быстрая статистика -->
         <div class="quick-stats">
             <div class="stat-item">
-                <div class="stat-number" id="totalAppointmentsCount">3</div>
-                <div class="stat-label">Всего записей</div>
+                <div class="stat-number" id="totalCount">-</div>
+                <div class="stat-label">Всего</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number" id="todayAppointmentsCount">2</div>
-                <div class="stat-label">Сегодня</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="scheduledCount">2</div>
+                <div class="stat-number" id="scheduledCount">-</div>
                 <div class="stat-label">Запланировано</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number" id="completedCount">1</div>
+                <div class="stat-number" id="completedCount">-</div>
                 <div class="stat-label">Завершено</div>
             </div>
         </div>
 
-        <!-- Быстрые действия -->
-        <div class="quick-actions-bar">
-            <button class="quick-action-btn" onclick="openAddAppointmentModal()">➕ Новая запись</button>
-            <button class="quick-action-btn" onclick="switchView('calendar')">📅 Календарь</button>
-            <button class="quick-action-btn" onclick="switchView('table')">📋 Список</button>
-            <button class="quick-action-btn" onclick="filterByStatus('scheduled')">⏰ Запланированные</button>
-            <button class="quick-action-btn" onclick="filterByStatus('completed')">✅ Завершённые</button>
+        <div style="margin-bottom: 20px;">
+            <button class="btn btn-success" onclick="openModal()">➕ Новая запись</button>
         </div>
 
         <div class="view-toggle">
-            <button id="calendarViewBtn" class="active" onclick="switchView('calendar')">📅 Календарь</button>
-            <button id="tableViewBtn" onclick="switchView('table')">📋 Список</button>
+            <button id="calendarBtn" class="active" onclick="switchView('calendar')">📅 Календарь</button>
+            <button id="tableBtn" onclick="switchView('table')">📋 Список</button>
         </div>
 
-        <button class="nav add-appointment" onclick="openAddAppointmentModal()">
-            ➕ Записать на приём
-        </button>
-
-        <!-- Календарное представление -->
+        <!-- Calendar View -->
         <div id="calendarView">
-            <!-- Навигация по неделям -->
             <div class="week-navigation">
-                <button class="week-nav-btn" onclick="changeWeek(-1)">← Предыдущая</button>
-                <div class="current-week" id="currentWeekDisplay">Неделя 25 января - 31 января 2025</div>
-                <button class="week-nav-btn" onclick="changeWeek(1)">Следующая →</button>
+                <button class="week-nav-btn" onclick="changeWeek(-1)">← Пред.</button>
+                <div class="current-week" id="weekDisplay">-</div>
+                <button class="week-nav-btn" onclick="changeWeek(1)">След. →</button>
             </div>
-            
-            <div class="weekly-calendar" id="weeklyCalendarContainer">
-                <!-- Календарь будет сгенерирован через JavaScript -->
-            </div>
+            <div class="weekly-calendar" id="calendar"></div>
         </div>
 
-        <!-- Табличное представление -->
+        <!-- Table View -->
         <div id="tableView" style="display: none;">
-            <table class="appointments-table" id="appointmentsTable">
+            <table class="data-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Пациент</th>
-                        <th>Дата и время</th>
+                        <th>Дата/Время</th>
                         <th>Услуга</th>
-                        <th>Врач</th>
                         <th>Статус</th>
-                        <th>Стоимость</th>
+                        <th>Цена</th>
                         <th>Действия</th>
                     </tr>
                 </thead>
-                <tbody id="appointmentsTableBody">
-                    <!-- Данные будут загружены через JavaScript -->
-                </tbody>
+                <tbody id="tableBody"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- Модальное окно для добавления/редактирования записи -->
-    <div id="appointmentModal" class="modal">
+    <!-- Modal -->
+    <div id="modal" class="modal">
         <div class="modal-content">
-            <h2 id="modalTitle">Записать на приём</h2>
-            <form id="appointmentForm">
+            <h2 id="modalTitle">Новая запись</h2>
+            <form id="form">
                 <div class="form-group">
-                    <label for="appointmentPatient">Пациент *</label>
-                    <select id="appointmentPatient" required>
-                        <option value="">Выберите пациента</option>
-                        <!-- Опции будут загружены через JavaScript -->
-                    </select>
+                    <label for="patient">Пациент *</label>
+                    <select id="patient" required></select>
                 </div>
                 <div class="form-group">
-                    <label for="appointmentDate">Дата *</label>
-                    <input type="date" id="appointmentDate" required>
+                    <label for="date">Дата *</label>
+                    <input type="date" id="date" required>
                 </div>
                 <div class="form-group">
-                    <label for="appointmentTime">Время *</label>
-                    <select id="appointmentTime" required>
+                    <label for="time">Время *</label>
+                    <select id="time" required>
                         <option value="">Выберите время</option>
-                        <option value="08:00">08:00</option>
-                        <option value="08:30">08:30</option>
-                        <option value="09:00">09:00</option>
-                        <option value="09:30">09:30</option>
-                        <option value="10:00">10:00</option>
-                        <option value="10:30">10:30</option>
-                        <option value="11:00">11:00</option>
-                        <option value="11:30">11:30</option>
-                        <option value="12:00">12:00</option>
-                        <option value="12:30">12:30</option>
-                        <option value="13:00">13:00</option>
-                        <option value="13:30">13:30</option>
-                        <option value="14:00">14:00</option>
-                        <option value="14:30">14:30</option>
-                        <option value="15:00">15:00</option>
-                        <option value="15:30">15:30</option>
-                        <option value="16:00">16:00</option>
-                        <option value="16:30">16:30</option>
-                        <option value="17:00">17:00</option>
-                        <option value="17:30">17:30</option>
-                        <option value="18:00">18:00</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="appointmentService">Услуга *</label>
-                    <select id="appointmentService" required>
-                        <option value="">Выберите услугу</option>
-                        <!-- Опции будут загружены через JavaScript -->
-                    </select>
+                    <label for="service">Услуга *</label>
+                    <select id="service" required></select>
                 </div>
                 <div class="form-group">
-                    <label for="appointmentDoctor">Врач *</label>
-                    <select id="appointmentDoctor" required>
-                        <option value="">Выберите врача</option>
-                        <option value="Др. Смит">Др. Смит</option>
-                        <option value="Др. Джонс">Др. Джонс</option>
-                        <option value="Др. Уилсон">Др. Уилсон</option>
-                    </select>
+                    <label for="price">Цена (₸)</label>
+                    <input type="number" id="price" min="0">
                 </div>
                 <div class="form-group">
-                    <label for="appointmentPrice">Цена (₸) *</label>
-                    <input type="text" id="appointmentPrice" placeholder="Введите цену" required>
+                    <label for="duration">Длительность (мин)</label>
+                    <input type="number" id="duration" min="15" value="30">
                 </div>
                 <div class="form-group">
-                    <label for="appointmentDuration">Длительность (минуты) *</label>
-                    <input type="text" id="appointmentDuration" placeholder="Введите длительность" required>
-                </div>
-                <div class="form-group">
-                    <label for="appointmentNotes">Примечания</label>
-                    <textarea id="appointmentNotes" placeholder="Дополнительная информация о приёме"></textarea>
+                    <label for="notes">Примечания</label>
+                    <textarea id="notes" rows="2"></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="closeAppointmentModal()">Отмена</button>
-                    <button type="submit" class="btn-save">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                    <button type="submit" class="btn btn-success">Сохранить</button>
                 </div>
             </form>
         </div>
     </div>
 
+    <div id="toast"></div>
+
+    <script src="/static/js/common.js"></script>
     <script>
-        // Данные загружаются с сервера
         let appointments = [];
         let patients = [];
         let services = [];
-
-        let currentEditingId = null;
+        let editingId = null;
         let currentView = 'calendar';
         let currentWeek = new Date();
 
-        // Загружаем данные с сервера при инициализации
-        async function loadDataFromServer() {
+        const TIME_SLOTS = [];
+        for (let h = 8; h <= 18; h++) {
+            TIME_SLOTS.push(`${String(h).padStart(2,'0')}:00`);
+            if (h < 18) TIME_SLOTS.push(`${String(h).padStart(2,'0')}:30`);
+        }
+
+        // Load all data
+        async function loadData() {
             try {
-                // Показываем индикатор загрузки
-                if (currentView === 'calendar') {
-                    const container = document.getElementById('weeklyCalendarContainer');
-                    container.innerHTML = '<div style="text-align: center; padding: 20px;">🔄 Обновление данных...</div>';
-                } else {
-                    const tbody = document.getElementById('appointmentsTableBody');
-                    if (tbody) {
-                        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">🔄 Обновление данных...</td></tr>';
-                    }
-                }
-                
-                // Загружаем пациентов
-                const patientsResponse = await fetch('/api/patients');
-                if (patientsResponse.ok) {
-                    const patientsData = await patientsResponse.json();
-                    patients = Array.isArray(patientsData) ? patientsData : (patientsData.data || []);
-                }
+                const [patientsRes, appointmentsRes, servicesRes] = await Promise.all([
+                    API.get('/api/patients'),
+                    API.get('/api/appointments'),
+                    API.get('/api/services')
+                ]);
 
-                // Загружаем записи
-                const appointmentsResponse = await fetch('/api/appointments');
-                if (appointmentsResponse.ok) {
-                    const appointmentsData = await appointmentsResponse.json();
-                    appointments = Array.isArray(appointmentsData) ? appointmentsData : (appointmentsData.data || []);
-                    console.log('Записи загружены в loadDataFromServer:', appointments.length);
-                    console.log('Первая запись:', appointments[0]);
-                }
+                patients = Array.isArray(patientsRes) ? patientsRes : (patientsRes.data || []);
+                appointments = Array.isArray(appointmentsRes) ? appointmentsRes : (appointmentsRes.data || []);
+                services = Array.isArray(servicesRes) ? servicesRes : (servicesRes.data || []);
 
-                // Загружаем услуги
-                const servicesResponse = await fetch('/api/services');
-                if (servicesResponse.ok) {
-                    const servicesData = await servicesResponse.json();
-                    services = Array.isArray(servicesData) ? servicesData : (servicesData.data || []);
-                }
-
-                // Обновляем интерфейс
-                loadPatientsOptions();
-                await loadServicesOptions();
-                loadAppointments();
-                
+                updateStats();
+                render();
+                populateSelects();
             } catch (error) {
-                console.error('Ошибка загрузки данных:', error);
-                showNotification('Ошибка загрузки данных с сервера', 'error');
+                console.error('Error:', error);
+                Toast.error('Ошибка загрузки данных');
             }
         }
 
-        // Глобальные функции для кнопок
-        window.openAddAppointmentModal = async function() {
-            console.log('Открываем модальное окно добавления записи');
-            currentEditingId = null;
-            document.getElementById('modalTitle').textContent = 'Записать на приём';
-            document.getElementById('appointmentForm').reset();
-            loadPatientsOptions();
-            await loadServicesOptions();
-            document.getElementById('appointmentModal').style.display = 'block';
-        };
-
-        // Удаляем дублирующую функцию closeAppointmentModal
-
-        window.editAppointment = function(id) {
-            console.log('Редактируем запись с ID:', id);
-            const appointment = appointments.find(a => a.id === id);
-            if (!appointment) return;
-
-            currentEditingId = id;
-            document.getElementById('modalTitle').textContent = 'Редактировать запись';
-            document.getElementById('appointmentPatient').value = appointment.patient_id;
-            document.getElementById('appointmentDate').value = appointment.date;
-            document.getElementById('appointmentTime').value = appointment.time;
-            document.getElementById('appointmentService').value = appointment.service;
-            document.getElementById('appointmentDoctor').value = appointment.doctor;
-            document.getElementById('appointmentPrice').value = appointment.price || '';
-            document.getElementById('appointmentDuration').value = appointment.duration || '';
-            document.getElementById('appointmentNotes').value = appointment.notes;
-            document.getElementById('appointmentModal').style.display = 'block';
-        };
-
-        window.viewAppointment = function(id) {
-            console.log('Просматриваем запись с ID:', id);
-            const appointment = appointments.find(a => a.id === id);
-            if (!appointment) return;
-
-            alert(`Запись #${appointment.id}\nПациент: ${appointment.patientName}\nДата: ${formatDateTime(appointment.date, appointment.time)}\nУслуга: ${getServiceName(appointment.service)}\nВрач: ${appointment.doctor}\nСтатус: ${getStatusText(appointment.status)}\nСтоимость: ${(appointment.price || 0).toLocaleString()} ₸\nПримечания: ${appointment.notes}`);
-        };
-
-        window.completeAppointment = async function(id) {
-            console.log('Завершаем запись с ID:', id);
-            try {
-                const appointment = appointments.find(a => a.id === id);
-                if (!appointment) return;
-
-                const response = await fetch(`/api/appointments/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({...appointment, status: 'completed'})
-                });
-
-                if (!response.ok) throw new Error('Ошибка завершения записи');
-                
-                const result = await response.json();
-                showNotification(result.message, 'success');
-                
-                // Перезагружаем данные с сервера
-                await loadDataFromServer();
-                
-            } catch (error) {
-                console.error('Ошибка завершения записи:', error);
-                showNotification('Ошибка завершения записи', 'error');
-            }
-        };
-
-        window.deleteAppointment = function(id) {
-            console.log('Удаляем запись с ID:', id);
-            if (confirm('Вы уверены, что хотите удалить эту запись?')) {
-                appointments = appointments.filter(a => a.id !== id);
-                loadAppointments();
-            }
-        };
-
-        window.switchView = function(view) {
-            console.log('Переключаем вид на:', view);
-            currentView = view;
-            
-            if (view === 'calendar') {
-                document.getElementById('calendarView').style.display = 'block';
-                document.getElementById('tableView').style.display = 'none';
-                document.getElementById('calendarViewBtn').classList.add('active');
-                document.getElementById('tableViewBtn').classList.remove('active');
-            } else {
-                document.getElementById('calendarView').style.display = 'none';
-                document.getElementById('tableView').style.display = 'block';
-                document.getElementById('tableViewBtn').classList.add('active');
-                document.getElementById('calendarViewBtn').classList.remove('active');
-            }
-            
-            loadAppointments();
-        };
-
-        // Загружаем данные при загрузке страницы (удалено - дублируется ниже)
-
-        function loadPatientsOptions() {
-            const select = document.getElementById('appointmentPatient');
-            select.innerHTML = '<option value="">Выберите пациента</option>';
-            patients.forEach(patient => {
-                const option = document.createElement('option');
-                option.value = patient.id;
-                option.textContent = patient.name;
-                select.appendChild(option);
-            });
+        function updateStats() {
+            document.getElementById('totalCount').textContent = appointments.length;
+            document.getElementById('scheduledCount').textContent = appointments.filter(a => a.status === 'scheduled').length;
+            document.getElementById('completedCount').textContent = appointments.filter(a => a.status === 'completed').length;
         }
 
-        async function loadServicesOptions() {
-            console.log('loadServicesOptions вызвана');
-            const select = document.getElementById('appointmentService');
-            if (!select) {
-                console.error('appointmentService select не найден');
+        function render() {
+            if (currentView === 'calendar') renderCalendar();
+            else renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+
+            if (!appointments.length) {
+                EmptyState.showInTable(tbody, 6, '📅', 'Нет записей');
                 return;
             }
-            select.innerHTML = '<option value="">Выберите услугу</option>';
-            
-            try {
-                console.log('Загружаем услуги с сервера...');
-                const servicesResponse = await fetch('/api/services');
-                if (servicesResponse.ok) {
-                    const servicesData = await servicesResponse.json();
-                    const servicesList = Array.isArray(servicesData) ? servicesData : (servicesData.data || []);
-                    console.log('Услуги загружены с сервера:', servicesList.length);
-                    
-                    servicesList.forEach(service => {
-                        const option = document.createElement('option');
-                        option.value = service.name;
-                        option.textContent = service.name;
-                        select.appendChild(option);
-                    });
-                } else {
-                    console.error('Ошибка ответа сервера:', servicesResponse.status);
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки услуг:', error);
-            }
-        }
 
-        function loadAppointments() {
-            console.log('loadAppointments вызвана, currentView:', currentView);
-            if (currentView === 'calendar') {
-                console.log('Обновляем календарь...');
-                generateWeeklyCalendar();
-            } else {
-                console.log('Обновляем таблицу...');
-                loadAppointmentsTable();
-            }
-        }
-
-        function loadAppointmentsTable() {
-            const tbody = document.getElementById('appointmentsTableBody');
-            tbody.innerHTML = '';
-
-            appointments.forEach(appointment => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${appointment.id}</td>
-                    <td>${appointment.patient_name || appointment.patientName || 'Неизвестно'}</td>
-                    <td>${formatDateTime(appointment.date, appointment.time)}</td>
-                    <td>${getServiceName(appointment.service)}</td>
-                    <td>${appointment.doctor}</td>
-                    <td><span class="status-${appointment.status}">${getStatusText(appointment.status)}</span></td>
-                    <td>${(appointment.price || 0).toLocaleString()} ₸</td>
-                    <td>
-                        <div class="action-buttons">
-                            ${appointment.status === 'scheduled' ? `<button class="btn btn-complete" onclick="completeAppointment(${appointment.id})">✓</button>` : ''}
-                            <button class="btn btn-edit" onclick="editAppointment(${appointment.id})">✏️</button>
-                            <button class="btn btn-delete" onclick="deleteAppointment(${appointment.id})">🗑️</button>
-                        </div>
+            tbody.innerHTML = appointments.map(a => `
+                <tr>
+                    <td><strong>${a.patient_name || 'Неизвестно'}</strong></td>
+                    <td>${DateUtils.format(a.date)} ${a.time || ''}</td>
+                    <td>${a.service || '-'}</td>
+                    <td>${renderStatusBadge(a.status)}</td>
+                    <td>${Currency.formatWithSymbol(a.price)}</td>
+                    <td class="actions">
+                        ${a.status === 'scheduled' ? `<button class="btn btn-sm btn-success" onclick="complete(${a.id})">✓</button>` : ''}
+                        <button class="btn btn-sm btn-warning" onclick="edit(${a.id})">✏️</button>
+                        <button class="btn btn-sm btn-danger" onclick="remove(${a.id})">🗑️</button>
                     </td>
-                `;
-            });
+                </tr>
+            `).join('');
         }
 
-        function getDoctorColor(doctorName) {
-            if (!doctorName) return '#6c757d'; // Серый по умолчанию
-            
-            // Создаем хэш из имени врача для стабильного цвета
-            let hash = 0;
-            for (let i = 0; i < doctorName.length; i++) {
-                hash = doctorName.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            
-            // Массив красивых цветов для врачей
-            const colors = [
-                '#007bff', // Синий
-                '#28a745', // Зеленый
-                '#ffc107', // Желтый
-                '#dc3545', // Красный
-                '#17a2b8', // Голубой
-                '#6f42c1', // Фиолетовый
-                '#fd7e14', // Оранжевый
-                '#20c997', // Бирюзовый
-                '#e83e8c', // Розовый
-                '#6c757d'  // Серый
-            ];
-            
-            return colors[Math.abs(hash) % colors.length];
-        }
-
-        function generateWeeklyCalendar() {
-            console.log('generateWeeklyCalendar вызвана');
-            const container = document.getElementById('weeklyCalendarContainer');
-            if (!container) {
-                console.error('weeklyCalendarContainer не найден');
-                return;
-            }
-            const today = new Date();
-            
-            // Получаем начало и конец текущей недели
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
             const weekStart = getWeekStart(currentWeek);
+
+            // Update week display
             const weekEnd = new Date(weekStart);
             weekEnd.setDate(weekEnd.getDate() + 6);
-            
-            // Обновляем отображение текущей недели
-            document.getElementById('currentWeekDisplay').textContent = 
-                `Неделя ${formatWeekDate(weekStart)} - ${formatWeekDate(weekEnd)}`;
-            
-            container.innerHTML = '';
-            
-            // Создаем временные слоты (8:00 - 18:00)
-            const timeSlots = [];
-            for (let hour = 8; hour <= 18; hour++) {
-                timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
-                if (hour < 18) {
-                    timeSlots.push(`${hour.toString().padStart(2, '0')}:30`);
-                }
-            }
-            console.log('Создано временных слотов:', timeSlots.length);
-            
-            // Создаем заголовки дней недели
-            const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-            const dayNumbers = [];
-            
+            document.getElementById('weekDisplay').textContent =
+                `${weekStart.toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'})} - ${weekEnd.toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'})}`;
+
+            const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            const today = new Date();
+
+            let html = '<div class="time-slot"></div>';
+
+            // Day headers
             for (let i = 0; i < 7; i++) {
-                const dayDate = new Date(weekStart);
-                dayDate.setDate(dayDate.getDate() + i);
-                dayNumbers.push(dayDate.getDate());
+                const d = new Date(weekStart);
+                d.setDate(d.getDate() + i);
+                html += `<div class="day-header"><div class="day-name">${days[i]}</div><div class="day-number">${d.getDate()}</div></div>`;
             }
-            
-            // Добавляем заголовок для временных слотов
-            const timeHeader = document.createElement('div');
-            timeHeader.className = 'time-slot';
-            timeHeader.textContent = 'Время';
-            container.appendChild(timeHeader);
-            
-            // Добавляем заголовки дней
-            for (let i = 0; i < 7; i++) {
-                const dayHeader = document.createElement('div');
-                dayHeader.className = 'day-header';
-                dayHeader.innerHTML = `
-                    <div class="day-name">${dayNames[i]}</div>
-                    <div class="day-number">${dayNumbers[i]}</div>
-                `;
-                container.appendChild(dayHeader);
-            }
-            
-            // Создаем ячейки времени
-            console.log('Начинаем создание ячеек времени...');
-            timeSlots.forEach((timeSlot, index) => {
-                console.log(`Создаем ячейку ${index + 1}/${timeSlots.length} для времени ${timeSlot}`);
-                // Добавляем ячейку времени
-                const timeCell = document.createElement('div');
-                timeCell.className = 'time-slot';
-                timeCell.textContent = timeSlot;
-                container.appendChild(timeCell);
-                
-                // Добавляем ячейки для каждого дня недели
-                for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
-                    const dayDate = new Date(weekStart);
-                    dayDate.setDate(dayDate.getDate() + dayIndex);
-                    
-                    const cell = document.createElement('div');
-                    cell.className = 'time-cell';
-                    
-                    // Проверяем, является ли это сегодняшним днем
-                    if (isSameDay(dayDate, today)) {
-                        cell.classList.add('today');
+
+            // Time rows
+            TIME_SLOTS.forEach(time => {
+                html += `<div class="time-slot">${time}</div>`;
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(weekStart);
+                    d.setDate(d.getDate() + i);
+                    const dateStr = d.toISOString().split('T')[0];
+                    const isToday = d.toDateString() === today.toDateString();
+                    const apt = findAppointment(dateStr, time);
+
+                    html += `<div class="time-cell${isToday ? ' today' : ''}" onclick="openModalForSlot('${dateStr}', '${time}')">`;
+                    if (apt) {
+                        const color = getColor(apt.service);
+                        html += `<div class="appointment-chip" style="background:${color}" onclick="event.stopPropagation(); viewAppointment(${apt.id})">${apt.patient_name || 'Запись'}</div>`;
                     }
-                    
-                    // Проверяем, есть ли запись на это время
-                    const appointment = getAppointmentForTimeSlot(dayDate, timeSlot);
-                    if (appointment) {
-                        cell.classList.add('occupied');
-                        const popup = document.createElement('div');
-                        popup.className = 'appointment-popup';
-                        popup.textContent = `${appointment.patient_name || appointment.patientName || 'Неизвестно'} (${appointment.doctor})`;
-                        popup.style.backgroundColor = getDoctorColor(appointment.doctor);
-                        popup.onclick = () => viewAppointment(appointment.id);
-                        cell.appendChild(popup);
-                    } else {
-                        // Добавляем возможность клика для создания новой записи
-                        cell.onclick = () => openAddAppointmentForSlot(dayDate, timeSlot);
-                    }
-                    
-                    container.appendChild(cell);
+                    html += '</div>';
                 }
             });
+
+            calendar.innerHTML = html;
         }
-        
+
+        function findAppointment(dateStr, time) {
+            return appointments.find(a => {
+                const aptDate = a.date.split('T')[0];
+                return aptDate === dateStr && a.time === time;
+            });
+        }
+
         function getWeekStart(date) {
             const d = new Date(date);
             const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Понедельник как начало недели
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
             return new Date(d.setDate(diff));
         }
-        
-        function formatWeekDate(date) {
-            return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-        }
-        
-        function isSameDay(date1, date2) {
-            return date1.getDate() === date2.getDate() &&
-                   date1.getMonth() === date2.getMonth() &&
-                   date1.getFullYear() === date2.getFullYear();
-        }
-        
-        function getAppointmentForTimeSlot(date, timeSlot) {
-            const dateStr = formatDateForAppointment(date);
-            console.log(`Ищем запись для даты: ${dateStr}, времени: ${timeSlot}`);
-            console.log('Доступные записи:', appointments.map(apt => ({date: apt.date, time: apt.time, patient: apt.patient_name})));
-            
-            // Ищем запись, учитывая что API может возвращать дату в разных форматах
-            const found = appointments.find(apt => {
-                const aptDate = apt.date.split('T')[0]; // Извлекаем только дату из ISO строки
-                return aptDate === dateStr && apt.time === timeSlot;
-            });
-            console.log('Найдена запись:', found);
-            return found;
-        }
-        
-        function formatDateForAppointment(date) {
-            return date.toISOString().split('T')[0];
-        }
-        
-        function changeWeek(direction) {
-            currentWeek.setDate(currentWeek.getDate() + (direction * 7));
-            generateWeeklyCalendar();
-        }
-        
-        async function openAddAppointmentForSlot(date, timeSlot) {
-            currentEditingId = null;
-            document.getElementById('appointmentForm').reset();
-            
-            // Устанавливаем дату и время
-            document.getElementById('appointmentDate').value = formatDateForAppointment(date);
-            document.getElementById('appointmentTime').value = timeSlot;
-            
-            // Загружаем опции
-            loadPatientsOptions();
-            await loadServicesOptions();
-            
-            // Проверяем доступность времени
-            updateTimeAvailability(date);
-            
-            document.getElementById('appointmentModal').style.display = 'block';
-        }
-        
-        function updateTimeAvailability(date) {
-            const timeSelect = document.getElementById('appointmentTime');
-            const dateStr = formatDateForAppointment(date);
-            
-            // Получаем все занятые времена на эту дату
-            const occupiedTimes = appointments
-                .filter(apt => apt.date === dateStr)
-                .map(apt => apt.time);
-            
-            // Обновляем доступность временных слотов
-            Array.from(timeSelect.options).forEach(option => {
-                if (option.value === '') return;
-                
-                if (occupiedTimes.includes(option.value)) {
-                    option.disabled = true;
-                    option.textContent = `${option.value} (занято)`;
-                    option.style.color = '#dc3545';
-                } else {
-                    option.disabled = false;
-                    option.textContent = option.value;
-                    option.style.color = '';
-                }
-            });
-        }
-        
-        function checkTimeConflict(date, time, excludeId = null) {
-            const dateStr = formatDateForAppointment(date);
-            return appointments.some(apt => 
-                apt.date === dateStr && 
-                apt.time === time && 
-                apt.id !== excludeId
-            );
+
+        function changeWeek(dir) {
+            currentWeek.setDate(currentWeek.getDate() + (dir * 7));
+            renderCalendar();
         }
 
         function switchView(view) {
             currentView = view;
-            
-            if (view === 'calendar') {
-                document.getElementById('calendarView').style.display = 'block';
-                document.getElementById('tableView').style.display = 'none';
-                document.getElementById('calendarViewBtn').classList.add('active');
-                document.getElementById('tableViewBtn').classList.remove('active');
-            } else {
-                document.getElementById('calendarView').style.display = 'none';
-                document.getElementById('tableView').style.display = 'block';
-                document.getElementById('tableViewBtn').classList.add('active');
-                document.getElementById('calendarViewBtn').classList.remove('active');
-            }
-            
-            loadAppointments();
+            document.getElementById('calendarView').style.display = view === 'calendar' ? 'block' : 'none';
+            document.getElementById('tableView').style.display = view === 'table' ? 'block' : 'none';
+            document.getElementById('calendarBtn').classList.toggle('active', view === 'calendar');
+            document.getElementById('tableBtn').classList.toggle('active', view === 'table');
+            render();
         }
 
-        function setupForm() {
-            const form = document.getElementById('appointmentForm');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    console.log('Форма записи отправлена, вызываем saveAppointment...');
-                    saveAppointment();
-                });
-                console.log('Форма записи настроена успешно');
-            } else {
-                console.error('Форма с id appointmentForm не найдена!');
-            }
+        function getColor(service) {
+            const colors = ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1', '#fd7e14'];
+            let hash = 0;
+            for (let i = 0; i < (service || '').length; i++) hash = service.charCodeAt(i) + ((hash << 5) - hash);
+            return colors[Math.abs(hash) % colors.length];
         }
 
-        // Удаляем дублирующее определение openAddAppointmentModal
+        function populateSelects() {
+            // Patients
+            const patientSelect = document.getElementById('patient');
+            patientSelect.innerHTML = '<option value="">Выберите пациента</option>' +
+                patients.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
 
-        function editAppointment(id) {
-            const appointment = appointments.find(a => a.id === id);
-            if (!appointment) return;
+            // Services
+            const serviceSelect = document.getElementById('service');
+            serviceSelect.innerHTML = '<option value="">Выберите услугу</option>' +
+                services.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
 
-            currentEditingId = id;
-            document.getElementById('modalTitle').textContent = 'Редактировать запись';
-            document.getElementById('appointmentPatient').value = appointment.patient_id;
-            document.getElementById('appointmentDate').value = appointment.date;
-            document.getElementById('appointmentTime').value = appointment.time;
-            document.getElementById('appointmentService').value = appointment.service;
-            document.getElementById('appointmentDoctor').value = appointment.doctor;
-            document.getElementById('appointmentPrice').value = appointment.price || '';
-            document.getElementById('appointmentDuration').value = appointment.duration || '';
-            document.getElementById('appointmentNotes').value = appointment.notes;
-            document.getElementById('appointmentModal').style.display = 'block';
+            // Time slots
+            const timeSelect = document.getElementById('time');
+            timeSelect.innerHTML = '<option value="">Выберите время</option>' +
+                TIME_SLOTS.map(t => `<option value="${t}">${t}</option>`).join('');
+        }
+
+        function openModal(apt = null) {
+            editingId = apt?.id || null;
+            document.getElementById('modalTitle').textContent = apt ? 'Редактировать запись' : 'Новая запись';
+            document.getElementById('form').reset();
+
+            if (apt) {
+                document.getElementById('patient').value = String(apt.patient_id || '');
+                document.getElementById('date').value = DateUtils.toInputFormat(apt.date) || '';
+                document.getElementById('time').value = apt.time || '';
+                document.getElementById('service').value = apt.service || '';
+                document.getElementById('price').value = apt.price || '';
+                document.getElementById('duration').value = apt.duration || 30;
+                document.getElementById('notes').value = apt.notes || '';
+            }
+
+            Modal.open('modal');
+        }
+
+        function openModalForSlot(dateStr, time) {
+            if (findAppointment(dateStr, time)) return;
+            document.getElementById('form').reset();
+            document.getElementById('date').value = dateStr;
+            document.getElementById('time').value = time;
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'Новая запись';
+            Modal.open('modal');
+        }
+
+        function closeModal() {
+            Modal.close('modal');
+            editingId = null;
+        }
+
+        function edit(id) {
+            const apt = appointments.find(a => a.id === id);
+            if (apt) openModal(apt);
         }
 
         function viewAppointment(id) {
-            const appointment = appointments.find(a => a.id === id);
-            if (!appointment) return;
+            const apt = appointments.find(a => a.id === id);
+            if (!apt) return;
+            const msg = `Пациент: ${apt.patient_name || 'Неизвестно'}\nУслуга: ${apt.service}\nДата: ${DateUtils.format(apt.date)} ${apt.time}\nСтатус: ${apt.status}\nЦена: ${Currency.formatWithSymbol(apt.price)}`;
+            alert(msg);
+        }
 
-            let message = `Запись #${appointment.id}\nПациент: ${appointment.patientName}\nДата: ${formatDateTime(appointment.date, appointment.time)}\nУслуга: ${getServiceName(appointment.service)}\nВрач: ${appointment.doctor}\nСтатус: ${getStatusText(appointment.status)}\nСтоимость: ${(appointment.price || 0).toLocaleString()} ₸\nПримечания: ${appointment.notes}`;
-            
-            if (appointment.status === 'scheduled') {
-                message += '\n\nНажмите OK, чтобы завершить запись';
-                if (confirm(message)) {
-                    completeAppointment(id);
-                }
-            } else {
-                alert(message);
+        async function complete(id) {
+            try {
+                const apt = appointments.find(a => a.id === id);
+                if (!apt) return;
+                await API.put(`/api/appointments/${id}`, {...apt, status: 'completed'});
+                Toast.success('Запись завершена');
+                loadData();
+            } catch (error) {
+                Toast.error('Ошибка');
             }
         }
 
-
-        async function deleteAppointment(id) {
-            if (confirm('Вы уверены, что хотите удалить эту запись?')) {
-                try {
-                    const response = await fetch(`/api/appointments/${id}`, {
-                        method: 'DELETE'
-                    });
-
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(errorText || 'Ошибка удаления записи');
-                    }
-                    
-                    const result = await response.json();
-                    showNotification(result.message, 'success');
-                    
-                    // Перезагружаем данные с сервера
-                    await loadDataFromServer();
-                    
-                    // Показываем уведомление об успешном обновлении
-                    showNotification('Данные обновлены!', 'success');
-                    
-                } catch (error) {
-                    console.error('Ошибка:', error);
-                    showNotification(error.message || 'Ошибка удаления записи', 'error');
-                }
+        async function remove(id) {
+            if (!confirm('Удалить запись?')) return;
+            try {
+                await API.delete(`/api/appointments/${id}`);
+                Toast.success('Запись удалена');
+                loadData();
+            } catch (error) {
+                Toast.error('Ошибка удаления');
             }
         }
 
-        window.saveAppointment = async function() {
-            const priceValue = document.getElementById('appointmentPrice').value;
-            const durationValue = document.getElementById('appointmentDuration').value;
-            
-            const formData = {
-                patient_id: parseInt(document.getElementById('appointmentPatient').value),
-                date: document.getElementById('appointmentDate').value,
-                time: document.getElementById('appointmentTime').value,
-                service: document.getElementById('appointmentService').value,
-                doctor: document.getElementById('appointmentDoctor').value,
-                price: priceValue ? parseFloat(priceValue) : 0,
-                duration: durationValue ? parseInt(durationValue) : 0,
-                notes: document.getElementById('appointmentNotes').value
-            };
+        async function save(e) {
+            e.preventDefault();
 
-            const appointmentData = {
-                ...formData,
-                status: currentEditingId ? appointments.find(a => a.id === currentEditingId)?.status || 'scheduled' : 'scheduled'
+            const dateVal = document.getElementById('date').value;
+            const timeVal = document.getElementById('time').value;
+
+            const data = {
+                patient_id: parseInt(document.getElementById('patient').value),
+                date: `${dateVal}T${timeVal}:00Z`,
+                time: timeVal,
+                service: document.getElementById('service').value,
+                price: parseFloat(document.getElementById('price').value) || 0,
+                duration: parseInt(document.getElementById('duration').value) || 30,
+                notes: document.getElementById('notes').value,
+                status: editingId ? (appointments.find(a => a.id === editingId)?.status || 'scheduled') : 'scheduled'
             };
 
             try {
-                if (currentEditingId) {
-                    // Редактирование существующей записи
-                    const response = await fetch(`/api/appointments/${currentEditingId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(appointmentData)
-                    });
-
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(errorText || 'Ошибка обновления записи');
-                    }
-                    
-                    const result = await response.json();
-                    showNotification(result.message, 'success');
+                if (editingId) {
+                    await API.put(`/api/appointments/${editingId}`, data);
+                    Toast.success('Запись обновлена');
                 } else {
-                    // Добавление новой записи
-                    const response = await fetch('/api/appointments', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(appointmentData)
-                    });
-
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(errorText || 'Ошибка добавления записи');
-                    }
-                    
-                    const result = await response.json();
-                    showNotification(result.message, 'success');
+                    await API.post('/api/appointments', data);
+                    Toast.success('Запись создана');
                 }
-
-                // Перезагружаем данные с сервера
-                console.log('Перезагружаем данные записей...');
-                await loadDataFromServer();
-                console.log('Данные записей перезагружены');
-                closeAppointmentModal();
-                
+                closeModal();
+                loadData();
             } catch (error) {
-                console.error('Ошибка:', error);
-                showNotification(error.message || 'Ошибка сохранения записи', 'error');
+                Toast.error('Ошибка сохранения');
             }
         }
 
-        window.closeAppointmentModal = function() {
-            console.log('Закрываем модальное окно записи');
-            const modal = document.getElementById('appointmentModal');
-            if (modal) {
-                modal.style.display = 'none';
-                console.log('Модальное окно записи скрыто');
-            } else {
-                console.error('Модальное окно записи не найдено!');
-            }
-            const form = document.getElementById('appointmentForm');
-            if (form) {
-                form.reset();
-                console.log('Форма записи сброшена');
-            } else {
-                console.error('Форма записи не найдена для сброса!');
-            }
-            currentEditingId = null;
-            console.log('Модальное окно записи закрыто полностью');
-        }
-
-        function formatDateTime(date, time) {
-            const dateObj = new Date(date);
-            return `${dateObj.toLocaleDateString('ru-RU')} ${time}`;
-        }
-
-        function getServiceName(serviceId) {
-            const service = services.find(s => s.id === serviceId);
-            return service ? service.name : serviceId;
-        }
-
-        function getStatusText(status) {
-            const statusMap = {
-                'scheduled': 'Запланирован',
-                'completed': 'Завершён',
-                'cancelled': 'Отменён'
-            };
-            return statusMap[status] || status;
-        }
-
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
-
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
-
-        function filterByStatus(status) {
-            // Простая фильтрация - можно расширить
-            const filteredAppointments = appointments.filter(apt => apt.status === status);
-            if (filteredAppointments.length === 0) {
-                showNotification(`Нет записей со статусом "${getStatusText(status)}"`, 'error');
-            } else {
-                showNotification(`Найдено ${filteredAppointments.length} записей со статусом "${getStatusText(status)}"`, 'success');
-            }
-        }
-
-        // Обработчик изменения даты для обновления доступности времени
-        document.getElementById('appointmentDate').addEventListener('change', function() {
-            const date = new Date(this.value);
-            if (!isNaN(date.getTime())) {
-                updateTimeAvailability(date);
-            }
-        });
-
-        // Закрытие модального окна при клике вне его
-        window.onclick = function(event) {
-            const modal = document.getElementById('appointmentModal');
-            if (event.target === modal) {
-                closeAppointmentModal();
-            }
-        }
-
-        function loadPatientsOptions() {
-            const select = document.getElementById('appointmentPatient');
-            select.innerHTML = '<option value="">Выберите пациента</option>';
-            patients.forEach(patient => {
-                const option = document.createElement('option');
-                option.value = patient.id;
-                option.textContent = patient.name;
-                select.appendChild(option);
-            });
-        }
-
-
-        // Проверка авторизации
-        function checkAuth() {
-            const userRole = localStorage.getItem('userRole');
-            if (!userRole) {
-                window.location.href = '/login.html';
-                return false;
-            }
-            return true;
-        }
-
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('DOM загружен, проверяем авторизацию...');
-            
-            if (!checkAuth()) {
-                return;
-            }
-            
-            console.log('Авторизация успешна, инициализируем страницу записей');
-            await loadDataFromServer();
-            setupForm();
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            document.getElementById('form').addEventListener('submit', save);
+            Modal.setupClickOutside('modal');
         });
     </script>
 </body>
