@@ -39,19 +39,20 @@ func (r *AppointmentRepository) Create(appointment *domain.Appointment) error {
 }
 
 func (r *AppointmentRepository) GetByID(id int) (*domain.Appointment, error) {
-	query := `SELECT a.id, a.patient_id, a.service_id, a.appointment_date, a.status, a.price, a.duration_minutes, a.notes, a.created_at, a.updated_at,
-			  s.name as service_name
+	query := `SELECT a.id, a.patient_id, a.appointment_date, a.status, a.price, a.duration_minutes, a.notes, a.created_at, a.updated_at,
+			  s.name as service_name, p.name as patient_name
 			  FROM appointments a
 			  LEFT JOIN services s ON a.service_id = s.id AND s.deleted_at IS NULL
+			  LEFT JOIN patients p ON a.patient_id = p.id AND p.deleted_at IS NULL
 			  WHERE a.id = $1 AND a.deleted_at IS NULL`
 
 	appointment := &domain.Appointment{}
-	var serviceID int
 	var serviceName sql.NullString
+	var patientName sql.NullString
 	err := r.db.QueryRow(query, id).Scan(
-		&appointment.ID, &appointment.PatientID, &serviceID,
+		&appointment.ID, &appointment.PatientID,
 		&appointment.Date, &appointment.Status, &appointment.Price, &appointment.Duration, &appointment.Notes,
-		&appointment.CreatedAt, &appointment.UpdatedAt, &serviceName,
+		&appointment.CreatedAt, &appointment.UpdatedAt, &serviceName, &patientName,
 	)
 
 	if err != nil {
@@ -67,14 +68,23 @@ func (r *AppointmentRepository) GetByID(id int) (*domain.Appointment, error) {
 		appointment.Service = "Неизвестная услуга"
 	}
 
+	if patientName.Valid {
+		appointment.PatientName = patientName.String
+	} else {
+		appointment.PatientName = "Неизвестно"
+	}
+
+	appointment.Time = appointment.Date.Format("15:04")
+
 	return appointment, nil
 }
 
 func (r *AppointmentRepository) GetAll() ([]*domain.Appointment, error) {
-	query := `SELECT a.id, a.patient_id, a.service_id, a.appointment_date, a.status, a.price, a.duration_minutes, a.notes, a.created_at, a.updated_at,
-			  s.name as service_name
+	query := `SELECT a.id, a.patient_id, a.appointment_date, a.status, a.price, a.duration_minutes, a.notes, a.created_at, a.updated_at,
+			  s.name as service_name, p.name as patient_name
 			  FROM appointments a
 			  LEFT JOIN services s ON a.service_id = s.id AND s.deleted_at IS NULL
+			  LEFT JOIN patients p ON a.patient_id = p.id AND p.deleted_at IS NULL
 			  WHERE a.deleted_at IS NULL
 			  ORDER BY a.appointment_date DESC`
 
@@ -87,12 +97,12 @@ func (r *AppointmentRepository) GetAll() ([]*domain.Appointment, error) {
 	var appointments []*domain.Appointment
 	for rows.Next() {
 		appointment := &domain.Appointment{}
-		var serviceID int
 		var serviceName sql.NullString
+		var patientName sql.NullString
 		err := rows.Scan(
-			&appointment.ID, &appointment.PatientID, &serviceID,
+			&appointment.ID, &appointment.PatientID,
 			&appointment.Date, &appointment.Status, &appointment.Price, &appointment.Duration, &appointment.Notes,
-			&appointment.CreatedAt, &appointment.UpdatedAt, &serviceName,
+			&appointment.CreatedAt, &appointment.UpdatedAt, &serviceName, &patientName,
 		)
 		if err != nil {
 			return nil, err
@@ -104,17 +114,26 @@ func (r *AppointmentRepository) GetAll() ([]*domain.Appointment, error) {
 			appointment.Service = "Неизвестная услуга"
 		}
 
+		if patientName.Valid {
+			appointment.PatientName = patientName.String
+		} else {
+			appointment.PatientName = "Неизвестно"
+		}
+
+		appointment.Time = appointment.Date.Format("15:04")
+
 		appointments = append(appointments, appointment)
 	}
 
-	return appointments, nil
+	return appointments, rows.Err()
 }
 
 func (r *AppointmentRepository) GetByDateRange(startDate, endDate time.Time) ([]*domain.Appointment, error) {
-	query := `SELECT a.id, a.patient_id, a.service_id, a.appointment_date, a.status, a.price, a.duration_minutes, a.notes, a.created_at, a.updated_at,
-			  s.name as service_name
+	query := `SELECT a.id, a.patient_id, a.appointment_date, a.status, a.price, a.duration_minutes, a.notes, a.created_at, a.updated_at,
+			  s.name as service_name, p.name as patient_name
 			  FROM appointments a
 			  LEFT JOIN services s ON a.service_id = s.id AND s.deleted_at IS NULL
+			  LEFT JOIN patients p ON a.patient_id = p.id AND p.deleted_at IS NULL
 			  WHERE a.deleted_at IS NULL AND a.appointment_date BETWEEN $1 AND $2
 			  ORDER BY a.appointment_date`
 
@@ -127,12 +146,12 @@ func (r *AppointmentRepository) GetByDateRange(startDate, endDate time.Time) ([]
 	var appointments []*domain.Appointment
 	for rows.Next() {
 		appointment := &domain.Appointment{}
-		var serviceID int
 		var serviceName sql.NullString
+		var patientName sql.NullString
 		err := rows.Scan(
-			&appointment.ID, &appointment.PatientID, &serviceID,
+			&appointment.ID, &appointment.PatientID,
 			&appointment.Date, &appointment.Status, &appointment.Price, &appointment.Duration, &appointment.Notes,
-			&appointment.CreatedAt, &appointment.UpdatedAt, &serviceName,
+			&appointment.CreatedAt, &appointment.UpdatedAt, &serviceName, &patientName,
 		)
 		if err != nil {
 			return nil, err
@@ -143,6 +162,14 @@ func (r *AppointmentRepository) GetByDateRange(startDate, endDate time.Time) ([]
 		} else {
 			appointment.Service = "Неизвестная услуга"
 		}
+
+		if patientName.Valid {
+			appointment.PatientName = patientName.String
+		} else {
+			appointment.PatientName = "Неизвестно"
+		}
+
+		appointment.Time = appointment.Date.Format("15:04")
 		appointments = append(appointments, appointment)
 	}
 
@@ -204,10 +231,11 @@ func (r *AppointmentRepository) Delete(id int) error {
 }
 
 func (r *AppointmentRepository) GetByPatientID(patientID int) ([]*domain.Appointment, error) {
-	query := `SELECT a.id, a.patient_id, a.service_id, a.appointment_date, a.status, a.price, a.duration_minutes, a.notes, a.created_at, a.updated_at,
-			  s.name as service_name
+	query := `SELECT a.id, a.patient_id, a.appointment_date, a.status, a.price, a.duration_minutes, a.notes, a.created_at, a.updated_at,
+			  s.name as service_name, p.name as patient_name
 			  FROM appointments a
 			  LEFT JOIN services s ON a.service_id = s.id AND s.deleted_at IS NULL
+			  LEFT JOIN patients p ON a.patient_id = p.id AND p.deleted_at IS NULL
 			  WHERE a.deleted_at IS NULL AND a.patient_id = $1
 			  ORDER BY a.appointment_date DESC`
 
@@ -220,12 +248,12 @@ func (r *AppointmentRepository) GetByPatientID(patientID int) ([]*domain.Appoint
 	var appointments []*domain.Appointment
 	for rows.Next() {
 		appointment := &domain.Appointment{}
-		var serviceID int
 		var serviceName sql.NullString
+		var patientName sql.NullString
 		err := rows.Scan(
-			&appointment.ID, &appointment.PatientID, &serviceID,
+			&appointment.ID, &appointment.PatientID,
 			&appointment.Date, &appointment.Status, &appointment.Price, &appointment.Duration, &appointment.Notes,
-			&appointment.CreatedAt, &appointment.UpdatedAt, &serviceName,
+			&appointment.CreatedAt, &appointment.UpdatedAt, &serviceName, &patientName,
 		)
 		if err != nil {
 			return nil, err
@@ -236,6 +264,14 @@ func (r *AppointmentRepository) GetByPatientID(patientID int) ([]*domain.Appoint
 		} else {
 			appointment.Service = "Неизвестная услуга"
 		}
+
+		if patientName.Valid {
+			appointment.PatientName = patientName.String
+		} else {
+			appointment.PatientName = "Неизвестно"
+		}
+
+		appointment.Time = appointment.Date.Format("15:04")
 		appointments = append(appointments, appointment)
 	}
 

@@ -160,18 +160,18 @@
 
         async function loadFinanceData() {
             try {
-                const response = await fetch('/api/dashboard');
+                const response = await fetch('/api/reports');
                 if (!response.ok) {
                     throw new Error('Ошибка загрузки данных');
                 }
-                
+
                 const data = await response.json();
                 displayData(data);
-                
+
                 // Скрываем загрузку и показываем контент
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('content').style.display = 'block';
-                
+
             } catch (error) {
                 console.error('Ошибка:', error);
                 document.getElementById('loading').style.display = 'none';
@@ -181,19 +181,19 @@
 
         function displayData(response) {
             const data = response.data;
-            
+
             // Обновляем общий доход
-            document.getElementById('totalAmount').textContent = 
-                new Intl.NumberFormat('ru-RU').format(data.total_revenue || 0);
+            document.getElementById('totalAmount').textContent =
+                new Intl.NumberFormat('ru-RU').format(data.total_income || 0);
 
             // Заполняем таблицу
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = '';
-            
+
             // Если есть данные по дням, используем их, иначе показываем общую статистику
             if (data.by_day && data.by_day.length > 0) {
                 const sortedByDay = data.by_day.sort((a, b) => new Date(a.date) - new Date(b.date));
-                
+
                 sortedByDay.forEach(day => {
                     const row = tableBody.insertRow();
                     row.insertCell(0).textContent = formatDate(day.date);
@@ -206,7 +206,7 @@
                 // Показываем общую статистику
                 const row = tableBody.insertRow();
                 row.insertCell(0).textContent = 'Общий доход';
-                row.insertCell(1).textContent = new Intl.NumberFormat('ru-RU').format(data.total_revenue || 0);
+                row.insertCell(1).textContent = new Intl.NumberFormat('ru-RU').format(data.total_income || 0);
             }
         }
 

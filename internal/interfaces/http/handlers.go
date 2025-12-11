@@ -517,6 +517,29 @@ func (h *Handler) DashboardHandler(w http.ResponseWriter, r *http.Request) {
 	h.writeSuccessResponse(w, "Dashboard stats retrieved successfully", stats)
 }
 
+// ReportsHandler обрабатывает запросы к /api/reports
+func (h *Handler) ReportsHandler(w http.ResponseWriter, r *http.Request) {
+	h.setCORSHeaders(w)
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	if r.Method != http.MethodGet {
+		h.writeErrorResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	report, err := h.dashboardUseCase.GetFinanceReport()
+	if err != nil {
+		h.writeErrorResponse(w, http.StatusInternalServerError, "Failed to get finance report")
+		return
+	}
+
+	h.writeSuccessResponse(w, "Finance report retrieved successfully", report)
+}
+
 // DoctorsHandler обрабатывает запросы к /api/doctors
 func (h *Handler) DoctorsHandler(w http.ResponseWriter, r *http.Request) {
 	h.setCORSHeaders(w)
@@ -699,6 +722,9 @@ func (h *Handler) SetupRoutes(mux *http.ServeMux) {
 
 	// API маршруты для дашборда
 	mux.HandleFunc("/api/dashboard", h.DashboardHandler)
+
+	// API маршрут для финансовых отчетов
+	mux.HandleFunc("/api/reports", h.ReportsHandler)
 
 	// API маршруты для врачей
 	mux.HandleFunc("/api/doctors", h.DoctorsHandler)

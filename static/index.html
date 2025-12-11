@@ -208,11 +208,11 @@
                 
                 const stats = await response.json();
                 console.log('Статистика загружена:', stats);
-                
+
                 // Обновляем статистику на странице
-                document.getElementById('todayAppointments').textContent = stats.today_appointments || 0;
-                document.getElementById('todayIncome').textContent = (stats.today_revenue || 0).toLocaleString();
-                document.getElementById('totalPatients').textContent = stats.total_patients || 0;
+                document.getElementById('todayAppointments').textContent = stats.data.today_appointments || 0;
+                document.getElementById('todayIncome').textContent = (stats.data.today_revenue || 0).toLocaleString();
+                document.getElementById('totalPatients').textContent = stats.data.total_patients || 0;
                 
             } catch (error) {
                 console.error('Ошибка загрузки статистики:', error);

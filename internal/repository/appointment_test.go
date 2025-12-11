@@ -97,10 +97,11 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 		patient := createTestPatient(t, "Patient GetByID")
 		service := createTestService(t, "Root Canal")
 
+		appointmentDate := time.Date(2024, 12, 15, 14, 30, 0, 0, time.UTC)
 		appointment := &domain.Appointment{
 			PatientID: patient.ID,
 			Service:   service.Name,
-			Date:      time.Now().Add(48 * time.Hour),
+			Date:      appointmentDate,
 			Status:    domain.StatusScheduled,
 			Price:     250.00,
 			Duration:  90,
@@ -116,6 +117,9 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 		assert.Equal(t, service.Name, found.Service)
 		assert.Equal(t, appointment.Price, found.Price)
 		assert.Equal(t, appointment.Duration, found.Duration)
+		// Verify patient_name and time are populated
+		assert.Equal(t, "Patient GetByID", found.PatientName)
+		assert.Equal(t, "14:30", found.Time)
 	})
 
 	t.Run("GetByID_NotFound", func(t *testing.T) {
@@ -135,10 +139,11 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 		service1 := createTestService(t, "Cleaning")
 		service2 := createTestService(t, "Filling")
 
+		baseDate := time.Date(2024, 12, 15, 9, 0, 0, 0, time.UTC)
 		appointments := []*domain.Appointment{
-			{PatientID: patient.ID, Service: service1.Name, Date: time.Now().Add(24 * time.Hour), Status: domain.StatusScheduled},
-			{PatientID: patient.ID, Service: service2.Name, Date: time.Now().Add(48 * time.Hour), Status: domain.StatusScheduled},
-			{PatientID: patient.ID, Service: service1.Name, Date: time.Now().Add(72 * time.Hour), Status: domain.StatusCompleted},
+			{PatientID: patient.ID, Service: service1.Name, Date: baseDate, Status: domain.StatusScheduled},
+			{PatientID: patient.ID, Service: service2.Name, Date: baseDate.Add(24 * time.Hour), Status: domain.StatusScheduled},
+			{PatientID: patient.ID, Service: service1.Name, Date: baseDate.Add(48 * time.Hour), Status: domain.StatusCompleted},
 		}
 
 		for _, a := range appointments {
@@ -149,6 +154,12 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 		all, err := appointmentRepo.GetAll()
 		require.NoError(t, err)
 		assert.Len(t, all, 3)
+
+		// Verify patient_name and time are populated for all appointments
+		for _, a := range all {
+			assert.Equal(t, "Patient GetAll", a.PatientName)
+			assert.Equal(t, "09:00", a.Time)
+		}
 	})
 
 	t.Run("Update", func(t *testing.T) {
@@ -234,12 +245,14 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 		patient2 := createTestPatient(t, "Patient2")
 		service := createTestService(t, "Consultation")
 
+		baseDate := time.Date(2024, 12, 15, 10, 30, 0, 0, time.UTC)
+
 		// Create appointments for patient1
 		for i := 0; i < 3; i++ {
 			a := &domain.Appointment{
 				PatientID: patient1.ID,
 				Service:   service.Name,
-				Date:      time.Now().Add(time.Duration(i*24) * time.Hour),
+				Date:      baseDate.Add(time.Duration(i*24) * time.Hour),
 				Status:    domain.StatusScheduled,
 			}
 			err := appointmentRepo.Create(a)
@@ -250,7 +263,7 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 		a := &domain.Appointment{
 			PatientID: patient2.ID,
 			Service:   service.Name,
-			Date:      time.Now().Add(24 * time.Hour),
+			Date:      baseDate.Add(24 * time.Hour),
 			Status:    domain.StatusScheduled,
 		}
 		err = appointmentRepo.Create(a)
@@ -260,11 +273,17 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 		appointments, err := appointmentRepo.GetByPatientID(patient1.ID)
 		require.NoError(t, err)
 		assert.Len(t, appointments, 3)
+		for _, appt := range appointments {
+			assert.Equal(t, "Patient1", appt.PatientName)
+			assert.Equal(t, "10:30", appt.Time)
+		}
 
 		// Get patient2's appointments
 		appointments, err = appointmentRepo.GetByPatientID(patient2.ID)
 		require.NoError(t, err)
 		assert.Len(t, appointments, 1)
+		assert.Equal(t, "Patient2", appointments[0].PatientName)
+		assert.Equal(t, "10:30", appointments[0].Time)
 	})
 
 	t.Run("GetByDate", func(t *testing.T) {
@@ -274,7 +293,7 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 		patient := createTestPatient(t, "Patient Date")
 		service := createTestService(t, "Appointment Service")
 
-		today := time.Now()
+		today := time.Date(2024, 12, 15, 11, 0, 0, 0, time.UTC)
 		tomorrow := today.Add(24 * time.Hour)
 
 		// Create appointments for today
@@ -303,11 +322,18 @@ func TestAppointmentRepository_Integration(t *testing.T) {
 		todayAppointments, err := appointmentRepo.GetByDate(today)
 		require.NoError(t, err)
 		assert.Len(t, todayAppointments, 2)
+		// Verify patient_name and time are populated
+		for _, appt := range todayAppointments {
+			assert.Equal(t, "Patient Date", appt.PatientName)
+			assert.NotEmpty(t, appt.Time)
+		}
 
 		// Get tomorrow's appointments
 		tomorrowAppointments, err := appointmentRepo.GetByDate(tomorrow)
 		require.NoError(t, err)
 		assert.Len(t, tomorrowAppointments, 1)
+		assert.Equal(t, "Patient Date", tomorrowAppointments[0].PatientName)
+		assert.Equal(t, "11:00", tomorrowAppointments[0].Time)
 	})
 
 	t.Run("CheckTimeConflict", func(t *testing.T) {
