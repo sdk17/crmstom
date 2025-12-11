@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/sdk17/crm_ar/internal/infrastructure"
-	httphandler "github.com/sdk17/crm_ar/internal/interfaces/http"
-	"github.com/sdk17/crm_ar/internal/usecase"
+	"github.com/sdk17/crmstom/internal/infrastructure"
+	httphandler "github.com/sdk17/crmstom/internal/interfaces/http"
+	"github.com/sdk17/crmstom/internal/usecase"
 )
 
 func main() {

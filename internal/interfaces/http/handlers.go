@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sdk17/crm_ar/internal/domain"
-	"github.com/sdk17/crm_ar/internal/usecase"
+	"github.com/sdk17/crmstom/internal/domain"
+	"github.com/sdk17/crmstom/internal/usecase"
 )
 
 // Handler содержит все HTTP обработчики

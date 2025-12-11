@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sdk17/crm_ar/internal/domain"
+	"github.com/sdk17/crmstom/internal/domain"
 )
 
 // PatientUseCase реализует бизнес-логику для пациентов
