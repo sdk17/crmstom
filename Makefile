@@ -1,6 +1,6 @@
 # Makefile для CRM Стоматология
 
-.PHONY: build run test clean deps lint fmt mock-gen
+.PHONY: build run test test-integration clean deps lint fmt mock-gen
 
 # Переменные
 BINARY_NAME=crm_ar
@@ -47,10 +47,17 @@ mock-gen:
 	@go generate ./gen/...
 	@echo "✅ Моки сгенерированы"
 
-# Тесты
+# Тесты (unit)
 test:
-	@echo "🧪 Запуск тестов..."
+	@echo "🧪 Запуск unit тестов..."
 	@go test -v ./...
+	@echo "🧪 Запуск integration тестов..."
+	@go test -v -tags=integration ./...
+
+# Integration тесты отдельно
+test-integration:
+	@echo "🧪 Запуск integration тестов..."
+	@go test -v -tags=integration ./...
 
 # Тесты с покрытием
 test-coverage:
@@ -99,7 +106,8 @@ help:
 	@echo "  fmt           - Форматирование кода"
 	@echo "  lint          - Линтинг кода"
 	@echo "  mock-gen      - Генерация моков"
-	@echo "  test          - Запуск тестов"
+	@echo "  test          - Запуск всех тестов (unit + integration)"
+	@echo "  test-integration - Запуск только integration тестов"
 	@echo "  test-coverage - Тесты с покрытием"
 	@echo "  clean         - Очистка"
 	@echo "  clean-all     - Полная очистка"
