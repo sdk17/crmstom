@@ -44,3 +44,8 @@ coverage.html
 .claude
 .cursor
 
+# Environment files (contain secrets)
+.env
+.env.local
+.env.production
+

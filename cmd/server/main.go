@@ -65,6 +65,7 @@ func main() {
 	mux.HandleFunc("/patients.html", servePatients)
 	mux.HandleFunc("/appointments.html", serveAppointments)
 	mux.HandleFunc("/patients-appointments.html", servePatientsAppointments)
+	mux.HandleFunc("/doctors.html", serveDoctors)
 	mux.HandleFunc("/services.html", serveServices)
 	mux.HandleFunc("/reports.html", serveReports)
 
@@ -113,6 +114,13 @@ func servePatientsAppointments(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Pragma", "no-cache")
 	w.Header().Set("Expires", "0")
 	http.ServeFile(w, r, "static/patients-appointments.html")
+}
+
+func serveDoctors(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+	http.ServeFile(w, r, "static/doctors.html")
 }
 
 func serveServices(w http.ResponseWriter, r *http.Request) {
