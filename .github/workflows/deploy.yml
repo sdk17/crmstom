@@ -36,7 +36,7 @@ jobs:
         with:
           host: cvm4.a7.kz
           username: root
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
           port: 20422
           script: |
             cd /opt/crmstom
@@ -44,13 +44,10 @@ jobs:
             # Pull latest changes
             git pull origin main
 
-            # Stop existing containers
-            docker compose -f docker-compose.prod.yml down
+            # Build Go binary
+            go build -o crmstom ./cmd/server
 
-            # Build and start containers
-            docker compose -f docker-compose.prod.yml up -d --build
-
-            # Clean up old images
-            docker image prune -f
+            # Restart the service
+            systemctl restart crmstom
 
             echo "Deployment completed successfully!"
