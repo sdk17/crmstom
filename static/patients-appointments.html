@@ -797,6 +797,7 @@
                     const doctorsData = await doctorsResponse.json();
                     doctors = Array.isArray(doctorsData) ? doctorsData : (doctorsData.data || []);
                     console.log('Врачи загружены:', doctors.length);
+                    loadDoctorsOptions();
                 }
 
             } catch (error) {
@@ -909,7 +910,7 @@
                     <td>${appointment.time}</td>
                     <td>${appointment.patient_name || 'Неизвестно'}</td>
                     <td>${getServiceName(appointment.service)}</td>
-                    <td>${appointment.doctor}</td>
+                    <td>${appointment.doctor || '-'}</td>
                     <td><span class="status-badge status-${appointment.status}">${getStatusText(appointment.status)}</span></td>
                     <td>${(appointment.price || appointment.cost || 0).toLocaleString()} ₸</td>
                     <td>
