@@ -718,10 +718,6 @@
                     <label for="appointmentDoctor">Врач *</label>
                     <select id="appointmentDoctor" name="doctor" required>
                         <option value="">Выберите врача</option>
-                        <option value="Др. Смит">Др. Смит</option>
-                        <option value="Др. Джонс">Др. Джонс</option>
-                        <option value="Др. Уилсон">Др. Уилсон</option>
-                        <option value="Др. Браун">Др. Браун</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -749,6 +745,7 @@
         let patients = [];
         let appointments = [];
         let services = [];
+        let doctors = [];
         let currentEditingId = null;
         let selectedPatientId = null;
         let currentView = 'table';
@@ -792,6 +789,14 @@
                     services = Array.isArray(servicesData) ? servicesData : (servicesData.data || []);
                     console.log('Услуги загружены:', services.length);
                     loadServicesOptions();
+                }
+
+                // Загружаем врачей
+                const doctorsResponse = await fetch('/api/doctors');
+                if (doctorsResponse.ok) {
+                    const doctorsData = await doctorsResponse.json();
+                    doctors = Array.isArray(doctorsData) ? doctorsData : (doctorsData.data || []);
+                    console.log('Врачи загружены:', doctors.length);
                 }
 
             } catch (error) {
@@ -1022,6 +1027,7 @@
             document.getElementById('appointmentModalTitle').textContent = 'Записать на приём';
             document.getElementById('appointmentForm').reset();
             loadPatientsOptions();
+            loadDoctorsOptions();
             document.getElementById('appointmentModal').style.display = 'block';
         }
 
@@ -1054,6 +1060,19 @@
                 const option = document.createElement('option');
                 option.value = service.name;
                 option.textContent = service.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Загрузка опций врачей в селект
+        function loadDoctorsOptions() {
+            const select = document.getElementById('appointmentDoctor');
+            select.innerHTML = '<option value="">Выберите врача</option>';
+            
+            doctors.forEach(doctor => {
+                const option = document.createElement('option');
+                option.value = doctor.name;
+                option.textContent = doctor.name;
                 select.appendChild(option);
             });
         }
@@ -1133,6 +1152,7 @@
             document.getElementById('appointmentNotes').value = appointment.notes || '';
             
             loadPatientsOptions();
+            loadDoctorsOptions();
             document.getElementById('appointmentModal').style.display = 'block';
         }
 

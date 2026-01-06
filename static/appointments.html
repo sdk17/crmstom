@@ -116,6 +116,10 @@
                     <select id="service" required></select>
                 </div>
                 <div class="form-group">
+                    <label for="doctor">Врач *</label>
+                    <select id="doctor" required></select>
+                </div>
+                <div class="form-group">
                     <label for="price">Цена (₸)</label>
                     <input type="number" id="price" min="0">
                 </div>
@@ -142,6 +146,7 @@
         let appointments = [];
         let patients = [];
         let services = [];
+        let doctors = [];
         let editingId = null;
         let currentView = 'calendar';
         let currentWeek = new Date();
@@ -155,15 +160,17 @@
         // Load all data
         async function loadData() {
             try {
-                const [patientsRes, appointmentsRes, servicesRes] = await Promise.all([
+                const [patientsRes, appointmentsRes, servicesRes, doctorsRes] = await Promise.all([
                     API.get('/api/patients'),
                     API.get('/api/appointments'),
-                    API.get('/api/services')
+                    API.get('/api/services'),
+                    API.get('/api/doctors')
                 ]);
 
                 patients = Array.isArray(patientsRes) ? patientsRes : (patientsRes.data || []);
                 appointments = Array.isArray(appointmentsRes) ? appointmentsRes : (appointmentsRes.data || []);
                 services = Array.isArray(servicesRes) ? servicesRes : (servicesRes.data || []);
+                doctors = Array.isArray(doctorsRes) ? doctorsRes : (doctorsRes.data || []);
 
                 updateStats();
                 render();
@@ -299,6 +306,11 @@
             serviceSelect.innerHTML = '<option value="">Выберите услугу</option>' +
                 services.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
 
+            // Doctors
+            const doctorSelect = document.getElementById('doctor');
+            doctorSelect.innerHTML = '<option value="">Выберите врача</option>' +
+                doctors.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+
             // Time slots
             const timeSelect = document.getElementById('time');
             timeSelect.innerHTML = '<option value="">Выберите время</option>' +
@@ -315,6 +327,7 @@
                 document.getElementById('date').value = DateUtils.toInputFormat(apt.date) || '';
                 document.getElementById('time').value = apt.time || '';
                 document.getElementById('service').value = apt.service || '';
+                document.getElementById('doctor').value = apt.doctor || '';
                 document.getElementById('price').value = apt.price || '';
                 document.getElementById('duration').value = apt.duration || 30;
                 document.getElementById('notes').value = apt.notes || '';
@@ -384,6 +397,7 @@
                 date: `${dateVal}T${timeVal}:00Z`,
                 time: timeVal,
                 service: document.getElementById('service').value,
+                doctor: document.getElementById('doctor').value,
                 price: parseFloat(document.getElementById('price').value) || 0,
                 duration: parseInt(document.getElementById('duration').value) || 30,
                 notes: document.getElementById('notes').value,
