@@ -39,7 +39,11 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: 20422
           script: |
+            set -e
             cd /opt/crmstom
+
+            # Source Go environment
+            export PATH=$PATH:/usr/local/go/bin
 
             # Pull latest changes
             git pull origin main
