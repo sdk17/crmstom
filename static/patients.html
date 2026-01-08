@@ -38,6 +38,7 @@
         <table class="data-table">
             <thead>
                 <tr>
+                    <th>ИИН</th>
                     <th>ФИО</th>
                     <th>Телефон</th>
                     <th>Email</th>
@@ -54,6 +55,10 @@
         <div class="modal-content">
             <h2 id="modalTitle">Добавить пациента</h2>
             <form id="form">
+                <div class="form-group">
+                    <label for="iin">ИИН (12 символов)</label>
+                    <input type="text" id="iin" maxlength="12" pattern="[0-9]{12}" placeholder="123456789012">
+                </div>
                 <div class="form-group">
                     <label for="name">ФИО *</label>
                     <input type="text" id="name" required>
@@ -96,7 +101,7 @@
         // Load patients
         async function loadData() {
             const tbody = document.getElementById('tableBody');
-            Loading.showInTable(tbody, 5);
+            Loading.showInTable(tbody, 6);
 
             try {
                 patients = await API.get('/api/patients');
@@ -113,12 +118,13 @@
             const tbody = document.getElementById('tableBody');
 
             if (!data || data.length === 0) {
-                EmptyState.showInTable(tbody, 5, '👥', 'Нет пациентов');
+                EmptyState.showInTable(tbody, 6, '👥', 'Нет пациентов');
                 return;
             }
 
             tbody.innerHTML = data.map(p => `
                 <tr>
+                    <td>${p.iin || '-'}</td>
                     <td><strong>${p.name}</strong></td>
                     <td>${Phone.format(p.phone) || '-'}</td>
                     <td>${p.email || '-'}</td>
@@ -153,6 +159,7 @@
             document.getElementById('form').reset();
 
             if (patient) {
+                document.getElementById('iin').value = patient.iin || '';
                 document.getElementById('name').value = patient.name || '';
                 document.getElementById('phone').value = patient.phone || '';
                 document.getElementById('email').value = patient.email || '';
@@ -193,6 +200,7 @@
             e.preventDefault();
 
             const data = {
+                iin: document.getElementById('iin').value,
                 name: document.getElementById('name').value,
                 phone: document.getElementById('phone').value,
                 email: document.getElementById('email').value,

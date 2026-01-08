@@ -37,6 +37,14 @@ func (u *PatientUseCase) CreatePatient(patient *domain.Patient) error {
 		return err
 	}
 
+	// Проверяем, не существует ли уже пациент с таким ИИН
+	if patient.IIN != "" {
+		existingPatient, err := u.patientRepo.GetByIIN(patient.IIN)
+		if err == nil && existingPatient != nil {
+			return errors.New("пациент с таким ИИН уже существует")
+		}
+	}
+
 	// Проверяем, не существует ли уже пациент с таким телефоном
 	if patient.Phone != "" {
 		existingPatient, err := u.patientRepo.GetByPhone(patient.Phone)
@@ -55,6 +63,14 @@ func (u *PatientUseCase) CreatePatient(patient *domain.Patient) error {
 func (u *PatientUseCase) UpdatePatient(patient *domain.Patient) error {
 	if err := u.ValidatePatient(patient); err != nil {
 		return err
+	}
+
+	// Проверяем, не существует ли уже другой пациент с таким ИИН
+	if patient.IIN != "" {
+		existingPatient, err := u.patientRepo.GetByIIN(patient.IIN)
+		if err == nil && existingPatient != nil && existingPatient.ID != patient.ID {
+			return errors.New("пациент с таким ИИН уже существует")
+		}
 	}
 
 	// Проверяем, не существует ли уже другой пациент с таким телефоном
@@ -98,6 +114,10 @@ func (u *PatientUseCase) ValidatePatient(patient *domain.Patient) error {
 
 	if len(patient.Name) > 100 {
 		return errors.New("patient name is too long")
+	}
+
+	if patient.IIN != "" && len(patient.IIN) != 12 {
+		return errors.New("ИИН должен содержать 12 символов")
 	}
 
 	if patient.Phone != "" && len(patient.Phone) > 20 {

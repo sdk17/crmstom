@@ -111,6 +111,7 @@ func (h *Handler) handleGetPatients(w http.ResponseWriter, r *http.Request) {
 // handleCreatePatient обрабатывает POST запросы для создания пациента
 func (h *Handler) handleCreatePatient(w http.ResponseWriter, r *http.Request) {
 	var request struct {
+		IIN       string `json:"iin"`
 		Name      string `json:"name"`
 		Phone     string `json:"phone"`
 		Email     string `json:"email"`
@@ -126,6 +127,7 @@ func (h *Handler) handleCreatePatient(w http.ResponseWriter, r *http.Request) {
 
 	// Создаем пациента
 	patient := &domain.Patient{
+		IIN:     request.IIN,
 		Name:    request.Name,
 		Phone:   request.Phone,
 		Email:   request.Email,

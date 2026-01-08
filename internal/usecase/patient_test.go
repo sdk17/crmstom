@@ -259,6 +259,50 @@ func TestPatientUseCase_CreatePatient(t *testing.T) {
 			errMsg:  "notes are too long",
 		},
 		{
+			name: "iin too short",
+			patient: &domain.Patient{
+				Name: "John",
+				IIN:  "12345678901",
+			},
+			setup:   func(m *repository.MockPatientRepository) {},
+			wantErr: true,
+			errMsg:  "ИИН должен содержать 12 символов",
+		},
+		{
+			name: "iin too long",
+			patient: &domain.Patient{
+				Name: "John",
+				IIN:  "1234567890123",
+			},
+			setup:   func(m *repository.MockPatientRepository) {},
+			wantErr: true,
+			errMsg:  "ИИН должен содержать 12 символов",
+		},
+		{
+			name: "success with valid iin",
+			patient: &domain.Patient{
+				Name: "John Doe",
+				IIN:  "123456789012",
+			},
+			setup: func(m *repository.MockPatientRepository) {
+				m.EXPECT().GetByIIN("123456789012").Return(nil, errors.New("not found"))
+				m.EXPECT().Create(gomock.Any()).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "duplicate iin",
+			patient: &domain.Patient{
+				Name: "John Doe",
+				IIN:  "123456789012",
+			},
+			setup: func(m *repository.MockPatientRepository) {
+				m.EXPECT().GetByIIN("123456789012").Return(&domain.Patient{ID: 1, IIN: "123456789012"}, nil)
+			},
+			wantErr: true,
+			errMsg:  "пациент с таким ИИН уже существует",
+		},
+		{
 			name: "duplicate phone",
 			patient: &domain.Patient{
 				Name:  "John Doe",
@@ -352,6 +396,45 @@ func TestPatientUseCase_UpdatePatient(t *testing.T) {
 			},
 			wantErr: true,
 			errMsg:  "пациент с таким номером телефона уже существует",
+		},
+		{
+			name: "update success with iin",
+			patient: &domain.Patient{
+				ID:   1,
+				Name: "John Updated",
+				IIN:  "123456789012",
+			},
+			setup: func(m *repository.MockPatientRepository) {
+				m.EXPECT().GetByIIN("123456789012").Return(&domain.Patient{ID: 1, IIN: "123456789012"}, nil)
+				m.EXPECT().Update(gomock.Any()).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "change iin to unique",
+			patient: &domain.Patient{
+				ID:   1,
+				Name: "John",
+				IIN:  "999999999999",
+			},
+			setup: func(m *repository.MockPatientRepository) {
+				m.EXPECT().GetByIIN("999999999999").Return(nil, errors.New("not found"))
+				m.EXPECT().Update(gomock.Any()).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "duplicate iin from another patient",
+			patient: &domain.Patient{
+				ID:   1,
+				Name: "John",
+				IIN:  "999999999999",
+			},
+			setup: func(m *repository.MockPatientRepository) {
+				m.EXPECT().GetByIIN("999999999999").Return(&domain.Patient{ID: 2, IIN: "999999999999"}, nil)
+			},
+			wantErr: true,
+			errMsg:  "пациент с таким ИИН уже существует",
 		},
 		{
 			name: "patient not found",
@@ -582,6 +665,28 @@ func TestPatientUseCase_ValidatePatient(t *testing.T) {
 		{
 			name:    "valid email",
 			patient: &domain.Patient{Name: "John", Email: "test@test.com"},
+			wantErr: false,
+		},
+		{
+			name:    "valid iin 12 chars",
+			patient: &domain.Patient{Name: "John", IIN: "123456789012"},
+			wantErr: false,
+		},
+		{
+			name:    "invalid iin 11 chars",
+			patient: &domain.Patient{Name: "John", IIN: "12345678901"},
+			wantErr: true,
+			errMsg:  "ИИН должен содержать 12 символов",
+		},
+		{
+			name:    "invalid iin 13 chars",
+			patient: &domain.Patient{Name: "John", IIN: "1234567890123"},
+			wantErr: true,
+			errMsg:  "ИИН должен содержать 12 символов",
+		},
+		{
+			name:    "empty iin is valid",
+			patient: &domain.Patient{Name: "John", IIN: ""},
 			wantErr: false,
 		},
 	}

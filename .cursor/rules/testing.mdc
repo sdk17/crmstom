@@ -1,0 +1,88 @@
+---
+description: Project testing and mock generation rules
+alwaysApply: false
+---
+## Testing and Mocks Policy
+
+- **When asked to write unit tests**: first regenerate mocks, then write tests.
+  - Run from repo root: `make mock-gen` (runs `go generate ./...` and refreshes mocks under `gen/mocks/`).
+  - After mocks are up-to-date, create or update `*_test.go` files alongside the code under test.
+
+- **Mocks location (use these imports)**:
+  - **services**: `code.emcdtech.com/endpoints/gw-wl-admin/gen/mocks/service`
+  - **repositories**: `code.emcdtech.com/endpoints/gw-wl-admin/gen/mocks/repository`
+  - **protocol clients**: `code.emcdtech.com/endpoints/gw-wl-admin/gen/mocks/protocol`
+
+- **Test stack**:
+  - Standard `testing` package
+  - `github.com/stretchr/testify/assert`
+  - `go.uber.org/mock/gomock`
+  - For Echo handlers, use `github.com/labstack/echo/v4` with `net/http/httptest`
+
+- **Structure & style**:
+  - Co-locate tests in the same package; name files `*_test.go`.
+  - Use table-driven tests for branches and error cases.
+  - Keep tests simple and deterministic; avoid external I/O.
+  - **Do not add comments in tests** - test names and code should be self-explanatory.
+  - Prefer clear Arrange–Act–Assert structure; keep each test small and explicit.
+  - Limit helpers: small local helpers are OK to remove duplication, but avoid deep helper layers and over-abstraction. Less is more.
+  - Follow assertion style used in the target package: if it already uses `testify/assert`, use it; otherwise stick to `testing` with explicit checks (`t.Errorf`, etc.).
+  - **Test names must match behavior**: Avoid misleading names like `"test error"` when expecting success. Name should reflect what the test actually verifies.
+  - **Remove useless tests**: Delete tests that don't add value, duplicate existing coverage, or test impossible scenarios.
+  - For gomock:
+    - Create a controller per test: `ctrl := gomock.NewController(t); defer ctrl.Finish()`
+    - Alternatively, use `t.Cleanup(ctrl.Finish)`.
+    - Build mocks via factories, e.g. `service.NewMockAuth(ctrl)`.
+  - For Echo handler tests, follow the pattern in `internal/middleware/auth_test.go` to build contexts and recorders.
+
+- **Realistic test data**:
+  - Use `uuid.New().String()` for IDs, especially for UserID and WhitelabelID (wlId) fields.
+  - Use only these approved coins and symbols: `BTC` (main coin), `LTC`, `KAS`, `ETC`, `BCH`. Validate case behavior where applicable.
+  - Use realistic values for timestamps (`time.Now()` or fixed `time.Date(...)`), emails (`test@example.com`), IPs (`192.168.1.1`), domains (`example.com`), passcodes (`123456`).
+  - When mocking gRPC client errors, prefer `status.Error(codes.X, "message")` with appropriate codes (e.g., `codes.NotFound`, `codes.Internal`).
+  - Keep expected structs and values explicit in the test body; avoid opaque comparison helpers.
+
+- **Test real functionality**:
+  - **For caches/repositories**: Test actual storage and retrieval cycles. Store data → retrieve data → verify exact match. Don't just mock everything.
+  - **Verify underlying mechanisms**: For Redis caches, check actual keys are created, TTLs are set, and data serialization works correctly.
+  - **Use real implementations when possible**: Use `miniredis` for Redis tests, real HTTP servers for API tests, etc.
+  - **Integration tests**: Include full workflow tests that exercise multiple components together to catch integration bugs.
+  - **Test data isolation**: Verify that operations on different entities don't interfere with each other.
+
+- **Meaningful error scenarios**:
+  - **Focus on realistic failures**: Connection timeouts, network errors, context cancellation, resource exhaustion.
+  - **Avoid testing impossible errors**: Don't test JSON marshal failures with normal Go structs - they rarely fail.
+  - **Test error propagation**: Verify errors bubble up correctly through the call stack.
+  - **Test recovery mechanisms**: Cache fallbacks, retry logic, graceful degradation.
+
+- **Coverage requirement**:
+  - When asked to test a component (service, repository, handler, middleware, etc.), write tests that achieve **100% coverage of the targeted unit(s)**.
+  - When asked to test specific method(s), write tests that achieve **100% coverage of those method bodies**.
+  - Cover success, invalid input, and error paths.
+  - **Critical**: Test edge cases that could cause panics (empty slices, nil pointers, boundary conditions).
+  - For components with caching: test cache hits, cache misses, cache errors, and scenarios where caching is bypassed.
+
+- **Commands**:
+  - Regenerate mocks: `make mock-gen`
+  - Run all tests: `make test` or `go test -v ./...`
+  - (Optional) Coverage for a package: `go test -cover ./internal/service/...`
+
+- **Maintaining mocks**:
+  - Centralize ALL `//go:generate mockgen ...` commands in `gen/mocks.go`. Do not scatter them across files.
+  - Keep commands structured by section (Repository, Protocol, External Repository, Service) and maintain alphabetical order within each section.
+  - If new interfaces are added for testing, add the corresponding `//go:generate mockgen ...` entry to `gen/mocks.go` and run `make mock-gen`.
+
+- **Code quality during testing**:
+  - If testing reveals runtime errors (panics, crashes, undefined behavior), **fix the code first**, then write tests for the corrected behavior.
+  - Do not write tests that work around broken code; fix the underlying issue.
+  - When refactoring for testability, prefer simpler, more readable code that naturally achieves better coverage.
+
+- **Test quality review**:
+  - **Audit test names vs behavior**: Ensure test names accurately describe what they verify. Remove or rename misleading tests.
+  - **Question every test**: Ask "What would break if I removed this test?" If nothing meaningful, delete it.
+  - **Remove redundant tests**: Don't test the same scenario multiple ways unless each adds unique value.
+  - **Verify assertions match expectations**: `assert.NoError()` for success cases, `assert.Error()` for failure cases.
+  - **Test the interface, not the implementation**: Focus on public behavior, not internal mechanics.
+
+- **Do not** add debug logging or flaky sleeps in tests.
+

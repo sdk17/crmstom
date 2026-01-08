@@ -214,4 +214,123 @@ func TestPatientRepository_Integration(t *testing.T) {
 		assert.Len(t, results, 1)
 		assert.Equal(t, "Bob Johnson", results[0].Name)
 	})
+
+	t.Run("Create_WithIIN", func(t *testing.T) {
+		err := testDB.TruncateTables(ctx)
+		require.NoError(t, err)
+
+		patient := &domain.Patient{
+			IIN:       "123456789012",
+			Name:      "John Doe",
+			Phone:     "+7 777 123 4567",
+			Email:     "john@example.com",
+			BirthDate: time.Date(1990, 5, 15, 0, 0, 0, 0, time.UTC),
+			Address:   "123 Main St",
+		}
+
+		err = repo.Create(patient)
+		require.NoError(t, err)
+		assert.Greater(t, patient.ID, 0)
+
+		found, err := repo.GetByID(patient.ID)
+		require.NoError(t, err)
+		assert.Equal(t, "123456789012", found.IIN)
+	})
+
+	t.Run("GetByIIN", func(t *testing.T) {
+		err := testDB.TruncateTables(ctx)
+		require.NoError(t, err)
+
+		patient := &domain.Patient{
+			IIN:   "987654321012",
+			Name:  "IIN Test Patient",
+			Phone: "+7 777 888 8888",
+		}
+		err = repo.Create(patient)
+		require.NoError(t, err)
+
+		found, err := repo.GetByIIN("987654321012")
+		require.NoError(t, err)
+		assert.Equal(t, patient.ID, found.ID)
+		assert.Equal(t, patient.Name, found.Name)
+		assert.Equal(t, patient.IIN, found.IIN)
+	})
+
+	t.Run("GetByIIN_NotFound", func(t *testing.T) {
+		err := testDB.TruncateTables(ctx)
+		require.NoError(t, err)
+
+		_, err = repo.GetByIIN("000000000000")
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "не найден")
+	})
+
+	t.Run("Update_WithIIN", func(t *testing.T) {
+		err := testDB.TruncateTables(ctx)
+		require.NoError(t, err)
+
+		patient := &domain.Patient{
+			IIN:   "111111111111",
+			Name:  "Original Name",
+			Phone: "+7 777 444 4444",
+		}
+		err = repo.Create(patient)
+		require.NoError(t, err)
+
+		patient.IIN = "222222222222"
+		patient.Name = "Updated Name"
+		err = repo.Update(patient)
+		require.NoError(t, err)
+
+		found, err := repo.GetByID(patient.ID)
+		require.NoError(t, err)
+		assert.Equal(t, "222222222222", found.IIN)
+		assert.Equal(t, "Updated Name", found.Name)
+	})
+
+	t.Run("Search_ByIIN", func(t *testing.T) {
+		err := testDB.TruncateTables(ctx)
+		require.NoError(t, err)
+
+		patients := []*domain.Patient{
+			{IIN: "111222333444", Name: "Patient One", Phone: "+7 777 100 0001"},
+			{IIN: "555666777888", Name: "Patient Two", Phone: "+7 777 100 0002"},
+			{IIN: "111999888777", Name: "Patient Three", Phone: "+7 777 100 0003"},
+		}
+
+		for _, p := range patients {
+			err := repo.Create(p)
+			require.NoError(t, err)
+		}
+
+		results, err := repo.Search("111")
+		require.NoError(t, err)
+		assert.Len(t, results, 2)
+
+		results, err = repo.Search("555666777888")
+		require.NoError(t, err)
+		assert.Len(t, results, 1)
+		assert.Equal(t, "Patient Two", results[0].Name)
+	})
+
+	t.Run("IIN_UniqueConstraint", func(t *testing.T) {
+		err := testDB.TruncateTables(ctx)
+		require.NoError(t, err)
+
+		patient1 := &domain.Patient{
+			IIN:   "333333333333",
+			Name:  "First Patient",
+			Phone: "+7 777 100 0001",
+		}
+		err = repo.Create(patient1)
+		require.NoError(t, err)
+
+		patient2 := &domain.Patient{
+			IIN:   "333333333333",
+			Name:  "Second Patient",
+			Phone: "+7 777 100 0002",
+		}
+		err = repo.Create(patient2)
+		assert.Error(t, err)
+	})
 }

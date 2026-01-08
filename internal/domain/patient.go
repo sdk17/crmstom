@@ -7,6 +7,7 @@ import (
 // Patient представляет пациента в доменной модели
 type Patient struct {
 	ID        int       `json:"id"`
+	IIN       string    `json:"iin"`
 	Name      string    `json:"name"`
 	Phone     string    `json:"phone"`
 	Email     string    `json:"email"`
@@ -27,6 +28,7 @@ type PatientRepository interface {
 	Delete(id int) error
 	Search(query string) ([]*Patient, error)
 	GetByPhone(phone string) (*Patient, error)
+	GetByIIN(iin string) (*Patient, error)
 }
 
 // PatientService определяет бизнес-логику для работы с пациентами

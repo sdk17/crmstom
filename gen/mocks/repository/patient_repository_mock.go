@@ -98,6 +98,21 @@ func (mr *MockPatientRepositoryMockRecorder) GetByID(id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockPatientRepository)(nil).GetByID), id)
 }
 
+// GetByIIN mocks base method.
+func (m *MockPatientRepository) GetByIIN(iin string) (*domain.Patient, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByIIN", iin)
+	ret0, _ := ret[0].(*domain.Patient)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByIIN indicates an expected call of GetByIIN.
+func (mr *MockPatientRepositoryMockRecorder) GetByIIN(iin any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByIIN", reflect.TypeOf((*MockPatientRepository)(nil).GetByIIN), iin)
+}
+
 // GetByPhone mocks base method.
 func (m *MockPatientRepository) GetByPhone(phone string) (*domain.Patient, error) {
 	m.ctrl.T.Helper()

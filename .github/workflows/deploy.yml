@@ -51,7 +51,7 @@ jobs:
             # Build Go binary
             go build -o crmstom ./cmd/server
 
-            # Restart the service
+            # Restart the service (migrations run automatically on app startup)
             systemctl restart crmstom
 
             echo "Deployment completed successfully!"

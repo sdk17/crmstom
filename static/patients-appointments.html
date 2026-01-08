@@ -634,6 +634,10 @@
             </div>
             <form id="patientForm">
                 <div class="form-group">
+                    <label for="patientIIN">ИИН (12 символов)</label>
+                    <input type="text" id="patientIIN" name="iin" maxlength="12" pattern="[0-9]{12}" placeholder="123456789012">
+                </div>
+                <div class="form-group">
                     <label for="patientName">Имя пациента *</label>
                     <input type="text" id="patientName" name="name" required>
                 </div>
@@ -818,7 +822,7 @@
                 
                 patientItem.innerHTML = `
                     <div class="patient-name">${patient.name}</div>
-                    <div class="patient-phone">${patient.phone || 'Телефон не указан'}</div>
+                    <div class="patient-phone">${patient.iin ? 'ИИН: ' + patient.iin : ''} ${patient.phone || 'Телефон не указан'}</div>
                 `;
                 
                 patientsList.appendChild(patientItem);
@@ -855,6 +859,7 @@
                 const query = this.value.toLowerCase();
                 const filteredPatients = patients.filter(patient => 
                     patient.name.toLowerCase().includes(query) ||
+                    (patient.iin && patient.iin.includes(query)) ||
                     (patient.phone && patient.phone.includes(query)) ||
                     (patient.email && patient.email.toLowerCase().includes(query))
                 );
@@ -874,7 +879,7 @@
                 
                 patientItem.innerHTML = `
                     <div class="patient-name">${patient.name}</div>
-                    <div class="patient-phone">${patient.phone || 'Телефон не указан'}</div>
+                    <div class="patient-phone">${patient.iin ? 'ИИН: ' + patient.iin : ''} ${patient.phone || 'Телефон не указан'}</div>
                 `;
                 
                 patientsList.appendChild(patientItem);
@@ -978,6 +983,7 @@
         // Сохранение пациента
         async function savePatient() {
             const formData = {
+                iin: document.getElementById('patientIIN').value || '',
                 name: document.getElementById('patientName').value,
                 phone: document.getElementById('patientPhone').value || '',
                 email: document.getElementById('patientEmail').value || '',
